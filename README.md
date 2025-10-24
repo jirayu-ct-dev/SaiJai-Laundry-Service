@@ -54,4 +54,3 @@ SaiJai Laundry Service เป็นระบบซักอบรีดอัจ
 This project is developed for academic purposes and real business deployment. All rights reserved © SaiJai Laundry Service.
 
 ---
-
