@@ -14,13 +14,13 @@ SaiJai Laundry Service เป็นระบบซักอบรีดอัจ
 
 ## 🛠 Tech Stack
 
-| Category       | Technology                          |
-| -------------- | ----------------------------------- |
-| Frontend       | Nuxt 3, TypeScript, TailwindCSS     |
-| Backend        | Supabase (PostgreSQL), Prisma ORM   |
-| Authentication | Better Auth with LINE LIFF          |
-| Deployment     | Cloudflare / Vercel / Railway (TBD) |
-| DevOps         | Docker, GitHub CI/CD                |
+| Category       | Technology                                  |
+| -------------- | ------------------------------------------- |
+| Frontend       | Nuxt 3, TypeScript, TailwindCSS             |
+| Backend        | Nuxt 3, Supabase (PostgreSQL), Prisma ORM   |
+| Authentication | Better Auth with LINE LIFF                  |
+| Deployment     | Cloudflare / Vercel / Railway (TBD)         |
+| DevOps         | Docker, GitHub CI/CD                        |
 
 ---
 
