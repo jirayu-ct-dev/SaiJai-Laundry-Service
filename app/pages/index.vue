@@ -14,10 +14,23 @@ interface Profile {
   statusMessage?: string;
 }
 
+interface LineResponse {
+  profile: Profile | null
+  accessToken: string
+  idToken: string
+  email: string | null
+}
+
 const message = ref('')
 const error = ref<string | null>(null)
 const loggedIn = ref(false)
 const profile = ref<Profile | null>(null)
+const lineResponse = ref<LineResponse>({
+  profile: null,
+  idToken: '',
+  accessToken: '',
+  email: null
+})
 
 const ensureInit = async () => {
   // ปลั๊กอินเรา init แล้วตั้งแต่ตอนโหลดหน้าอยู่แล้ว
@@ -32,6 +45,26 @@ const login = async () => {
       liff.login()
       return
     }
+
+    lineResponse.value.accessToken = liff.getAccessToken() ?? ''
+    lineResponse.value.idToken = liff.getIDToken() ?? ''
+    const decodedToken = liff.getDecodedIDToken()
+    lineResponse.value.email = decodedToken?.email ?? null
+
+    if (!lineResponse.value.idToken || !lineResponse.value.accessToken) {
+      throw new Error('Missing required tokens');
+    }
+
+    const result = await authClient.signIn.social({
+      provider: "line",
+      idToken: {
+        token: lineResponse.value.idToken,
+        accessToken: lineResponse.value.accessToken,
+      },
+    });
+
+    console.log('Better Auth LINE result', result);
+
     loggedIn.value = true
     profile.value = await liff.getProfile()
   } catch (err: unknown) {
@@ -57,7 +90,23 @@ onMounted(async () => {
     message.value = 'LIFF init succeeded.'
     loggedIn.value = liff.isLoggedIn()
     if (loggedIn.value) {
-      profile.value = await liff.getProfile()
+      lineResponse.value.profile = await liff.getProfile()
+      lineResponse.value.accessToken = liff.getAccessToken() ?? ''
+      lineResponse.value.idToken = liff.getIDToken() ?? ''
+      const decodedToken = liff.getDecodedIDToken()
+      lineResponse.value.email = decodedToken?.email ?? null
+
+      if (!lineResponse.value.idToken || !lineResponse.value.accessToken) {
+        throw new Error('Missing required tokens');
+      }
+
+      await authClient.signIn.social({
+        provider: "line",
+        idToken: {
+          token: lineResponse.value.idToken,
+          accessToken: lineResponse.value.accessToken,
+        },
+      });
     }
   } catch (err: unknown) {
     message.value = 'LIFF init failed.'
@@ -80,38 +129,35 @@ onMounted(async () => {
     </div>
 
     <div v-if="profile" class="profile-container">
-      <img 
-      v-if="profile.pictureUrl" 
-           :src="profile.pictureUrl" 
-           :alt="profile.displayName" 
-           class="profile-image">
+      <img v-if="profile.pictureUrl" :src="profile.pictureUrl" :alt="profile.displayName" class="profile-image">
       <div class="profile-info">
         <h2>{{ profile.displayName }}</h2>
+        <p>Access Token: {{ lineResponse.accessToken }}</p>
+        <p>ID Token: {{ lineResponse.idToken }}</p>
+        <p v-if="lineResponse.email">Email: {{ lineResponse.email }}</p>
         <p v-if="profile.statusMessage" class="status-message">{{ profile.statusMessage }}</p>
       </div>
+
     </div>
 
+    <dev-only class="flex justify-start">
+      <pre>
+        {{ lineResponse }}
+      </pre>
+    </dev-only>
+
     <div class="button-container">
-      <button 
-      v-if="!loggedIn" 
-      class="line-button"
-       @click="login" >
+      <button v-if="!loggedIn" class="line-button" @click="login">
         Login with LINE
       </button>
-      <button 
-      v-else 
-      class="line-button logout"
-      @click="logout" >
+      <button v-else class="line-button logout" @click="logout">
         Logout
       </button>
     </div>
 
     <footer>
       <p>
-        <a 
-          href="https://developers.line.biz/ja/docs/liff/" 
-           target="_blank" 
-           rel="noreferrer">
+        <a href="https://developers.line.biz/ja/docs/liff/" target="_blank" rel="noreferrer">
           LIFF Documentation
         </a>
       </p>

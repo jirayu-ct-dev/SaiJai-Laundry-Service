@@ -3,4 +3,5 @@ import { createAuthClient } from "better-auth/vue" // make sure to import from b
 export const authClient = createAuthClient({
     //you can pass client configuration here
     baseURL: process.env.BETTER_AUTH_URL
+
 })

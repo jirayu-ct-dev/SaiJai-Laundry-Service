@@ -36,6 +36,23 @@ export const useUser = () => {
         return data
     }
 
+    const loginWithGoogle = async() => {
+        const { data, error } = await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/", // เมื่อสำเร็จ redirect ไปหน้าไหน
+            errorCallbackURL: "/login" // ถ้ามีผิดพลาด
+        })
+
+        if(error) {
+            console.log("Google sign-in failes: ", error)
+            throw new Error(error.message || 'Unknown error during login')
+        }
+
+        console.log("Signed in:", data);
+        return data
+
+    }
+
     const logout = async () => {
 
         user.value = null
@@ -46,6 +63,7 @@ export const useUser = () => {
         user,
         getCurrentUser,
         login,
+        loginWithGoogle,
         logout
     }
 }
