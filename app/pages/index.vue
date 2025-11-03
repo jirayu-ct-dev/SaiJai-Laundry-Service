@@ -1,5 +1,5 @@
 <template>
-    <div class="relative bg-slate-50 min-h-screen">
+    <div class="min-h-screen">
         <!-- <div class="flex justify-center px-0">
             <NuxtImg 
                 src="/BackgroundElement.webp" 
@@ -9,19 +9,14 @@
                 aria-hidden="true" 
             />
         </div> -->
-        <div class="relative px-20 ">
-            <section id="per-item-pricing">ค่าบริการรายชิ้น</section>
-            <UButton color="primary">Button primary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="secondary">Button secondary</UButton>
-            <UButton color="neutral">Button neutral</UButton>
-            <UButton color="warning">Button neutral</UButton>
+        <div class="flex flex-col scroll-mt-24">
+            
+            <section id="per-item-pricing" class="scroll-mt-24 sm:scroll-mt-28">ค่าบริการ</section>
+            <section id="monthly-membership" class="scroll-mt-24 sm:scroll-mt-28">สมัครสมาชิก</section>
+            <section id="status-tracking" class="scroll-mt-24 sm:scroll-mt-28">เช็คสถานะ</section>
+            <section id="faq" class="scroll-mt-24 sm:scroll-mt-28">คำถามที่พบบ่อย</section>
+            <section id="contact" class="scroll-mt-24 sm:scroll-mt-28">ติดต่อเรา</section>
+
         </div>
     </div>
 </template>

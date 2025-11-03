@@ -1,89 +1,111 @@
-<template>
-  <div class="min-h-screen mx-auto px-50">
-    <header class="bg-slate-50">
-      <nav class="mx-auto flex items-center justify-between gap-6 py-2">
-        <nuxt-link to="/" class="flex items-center">
-            <nuxt-img src="/logo-saijai-laundry-service.png" sizes="100" />
-            <div>
-              <h2 class="text-2xl font-bold text-sky-900">ใส่ใจ ผ้าเรียบ</h2>
-              <p class="tracking-wide text-sm">LAUNDRY SERVICE</p>
-            </div>
-        </nuxt-link>
-
-        <ul class="flex items-center gap-8 text-sm font-medium">
-          <li v-for="navLink in primaryNav" :key="navLink.label">
-            <NuxtLink
-              :to="navLink.to"
-              :target="navLink.target"
-              :rel="navLink.external ? 'noopener noreferrer' : undefined"
-              :class="[
-                'flex items-center gap-2 text-base transition',
-                isActive(navLink)
-                  ? 'text-sky-600 font-semibold'
-                  : 'text-gray-900 hover:text-gray-900/80'
-              ]"
-            >
-              <UIcon v-if="navLink.icon" :name="navLink.icon" class="h-5 w-5" />
-              {{ navLink.label }}
-            </NuxtLink>
-          </li>
-        </ul>
-
-        <div class="flex items-center gap-4">
-          <a
-            v-if="lineLink"
-            :href="lineLink.to as string"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 rounded-full bg-green-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-400"
-          >
-            <UIcon v-if="lineLink.icon" :name="lineLink.icon" class="h-5 w-5" />
-            {{ lineLink.label }}
-          </a>
-
-          <NuxtLink
-            v-for="link in authNav"
-            :key="link.label"
-            :to="link.to"
-            :class="[
-              'rounded-full px-4 py-2 text-sm font-semibold transition',
-              link.to === '/login'
-                ? 'border border-sky-500 text-sky-600 hover:bg-sky-50'
-                : 'bg-sky-500 text-white hover:bg-sky-600'
-            ]"
-          >
-            {{ link.label }}
-          </NuxtLink>
-        </div>
-      </nav>
-    </header>
-
-    <main class="mx-auto">
-      <slot />
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { AppNavLink } from '~/utils/links'
-import { authNavLinks, lineNavLinks, primaryNavLinks } from '~/utils/links'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import type { NavigationMenuItem } from '@nuxt/ui'
 
-const router = useRouter()
-const route = useRoute()
-
-const primaryNav = computed<AppNavLink[]>(() => Object.values(primaryNavLinks))
-const authNav = computed<AppNavLink[]>(() => Object.values(authNavLinks))
-const lineLink = computed<AppNavLink | undefined>(() => Object.values(lineNavLinks)[0])
-
-
-const isActive = (link: AppNavLink) => {
-    if (link.external) {
-        return false
-    }
-    const resolved = router.resolve(link.to)
-    return route.path === resolved.path && route.hash === resolved.hash
-}
+// ทำ active จาก hash เฉพาะฝั่ง client ป้องกัน SSR/CSR ไม่ตรงกัน
+const activeHash = ref('')
+const open = ref(false)
+const onHash = () => { activeHash.value = window.location.hash || '' }
+onMounted(() => { onHash(); window.addEventListener('hashchange', onHash, { passive: true }) })
+onBeforeUnmount(() => window.removeEventListener('hashchange', onHash))
 
 
+const items: NavigationMenuItem[] = [
+  {
+    label: 'ค่าบริการ',
+    to: { path: '/', hash: '#per-item-pricing', force: true },
+    exact: true,
+    exactHash: true
+  },
+  {
+    label: 'สมัครสมาชิก',
+    to: { path: '/', hash: '#monthly-membership', force: true },
+    exact: true,
+    exactHash: true
+  },
+  {
+    label: 'เช็คสถานะ',
+    to: { path: '/', hash: '#status-tracking', force: true },
+    exact: true,
+    exactHash: true
+  },
+  {
+    label: 'คำถามที่พบบ่อย',
+    to: { path: '/', hash: '#faq', force: true },
+    exact: true,
+    exactHash: true
+  },
+  {
+    label: 'ติดต่อเรา',
+    to: { path: '/', hash: '#contact', force: true },
+    exact: true,
+    exactHash: true
+  }
+]
 </script>
+
+<template>
+  <UApp>
+    <div>
+      <UHeader 
+        v-model:open="open"
+        mode="slideover"
+        title="ใส่ใจผ้าเรียบ"
+      >
+        <template #title>
+          <ClientOnly fallback="ใส่ใจผ้าเรียบ">
+            <Logo class="h-6 w-auto" />
+          </ClientOnly>
+        </template>
+
+        <ClientOnly fallback="">
+          <UNavigationMenu :items="items" class="hidden lg:flex" />
+        </ClientOnly>
+
+        <template #right>
+          <div v-show="!open" class="hidden md:flex items-center  gap-1.5 whitespace-nowrap shrink-0">
+              <UButton color="neutral" variant="ghost" to="https://line.me/R/ti/p/@883vmdct" target="_blank"
+                icon="i-simple-icons-line" aria-label="Line"
+                class="bg-[#06C755] shrink-0 hover:bg-[#06C755]/80 text-white rounded p-2 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60">
+                <span class="hidden md:inline">เพิ่มเพื่อน</span></UButton>
+
+            <!-- Login and Register -->
+            <div class="flex gap-2">
+              <NuxtLink to="/login"
+                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary">
+                Login
+              </NuxtLink>
+              <NuxtLink to="/sign-up"
+                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8">
+                Sign up
+              </NuxtLink>
+            </div>
+            <UColorModeButton />
+          </div>
+        </template>
+
+        <template #body>
+          <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
+
+          <div class="mt-3 flex flex-col gap-2">
+            <UButton color="neutral" variant="ghost" to="https://line.me/R/ti/p/@883vmdct" target="_blank"
+              icon="i-simple-icons-line">
+              เพิ่มเพื่อน
+            </UButton>
+            <UButton color="primary" variant="solid" icon="i-lucide-log-in" to="/login">
+              Sign up
+            </UButton>
+            <UColorModeSelect class="w-full" />
+          </div>
+        </template>
+      </UHeader>
+
+      <UMain>
+        <UContainer class="py-6 px-7 sm:px-10 md:px-10 lg:px-12 ">
+          <slot />
+        </UContainer>
+      </UMain>
+      <UFooter />
+    </div>
+  </UApp>
+</template>

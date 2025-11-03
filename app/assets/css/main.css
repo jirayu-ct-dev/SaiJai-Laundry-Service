@@ -1,13 +1,18 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-@layer base {
+/* @layer base {
   body {
     @apply bg-slate-50;
   }
-}
+} */
 
 body {
   font-family: "Prompt", sans-serif;
   font-weight: 400;
+}
+
+:root {
+  --ui-container: 72rem;   /* หรือ 80rem ตามใจคุณ */
+  --ui-header-height: 64px; /* สูงเฮดเดอร์สม่ำเสมอ */
 }

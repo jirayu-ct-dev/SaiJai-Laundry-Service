@@ -7,7 +7,12 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/image', '@nuxt/ui', '@nuxt/fonts'],
   css: ['~/assets/css/main.css'],
   ui: {
-    colorMode: false
+    colorMode: true
+  },
+  router: {
+    options: {
+      scrollBehaviorType: 'smooth'
+    }
   },
   runtimeConfig: {
     public: {

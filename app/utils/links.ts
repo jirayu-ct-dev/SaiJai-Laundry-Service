@@ -13,41 +13,31 @@ export type AppNavLink = {
 export type AppNavLinks = Record<string, AppNavLink>
 
 export const primaryNavLinks: AppNavLinks = {
-    perItemService: {
-        label: 'ค่าบริการผ้ารายชิ้น',
+    'ค่าบริการ': {
+        label: 'ค่าบริการ',
         to: { path: '/', hash: '#per-item-pricing' },
-        icon: 'i-lucide-shirt',
+        icon: 'i-lucide-book-open'
     },
-    monthlyMembership: {
-        label: 'สมัครสมาชิกรายเดือน',
+    'สมัครสมาชิก': {
+        label: 'สมัครสมาชิก',
         to: { path: '/', hash: '#monthly-membership' },
-        icon: 'i-lucide-credit-card'
+        icon: 'i-lucide-box'
     },
-    statusCheck: {
-        label: 'เช็กสถานะ',
+    'เช็คสถานะ': {
+        label: 'เช็คสถานะ',
         to: { path: '/', hash: '#status-tracking' },
-        icon: 'i-lucide-clipboard-check'
+        icon: 'i-simple-icons-figma'
     },
-    faq: {
+    'คำถามที่พบบ่อย': {
         label: 'คำถามที่พบบ่อย',
         to: { path: '/', hash: '#faq' },
-        icon: 'i-lucide-help-circle'
+        icon: 'i-lucide-rocket'
     },
-    contact: {
+    'ติดต่อเรา': {
         label: 'ติดต่อเรา',
         to: { path: '/', hash: '#contact' },
         icon: 'i-lucide-phone'
     }
-    // login: {
-    //     label: 'Login',
-    //     to: '/login',
-    //     icon: 'i-lucide-log-in'
-    // },
-    // register: {
-    //     label: 'Register',
-    //     to: '/sign-up',
-    //     icon: 'i-lucide-user-plus'
-    // }
 }
 
 export const authNavLinks: AppNavLinks = {
@@ -63,12 +53,9 @@ export const authNavLinks: AppNavLinks = {
     }
 }
 
-export const lineNavLinks: AppNavLinks = {
-    lineFriend: {
-        label: 'เพิ่มเพื่อนใน LINE OA',
-        to: 'https://line.me/R/ti/p/@saijai-laundry',
-        external: true,
-        target: '_blank',
-        icon: 'i-lucide-message-circle'
-    }
+export const lineNavLinks: AppNavLink = {
+    label: 'Add Line',
+    to: 'https://line.me/R/ti/p/@883vmdct',
+    external: true,
+    target: '_blank',
 }

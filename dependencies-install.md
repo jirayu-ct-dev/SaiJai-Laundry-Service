@@ -1,3 +1,12 @@
+#Start
+
+```
+bun install
+bun prisma migrate dev
+
+```
+
+
 # Setup
 
 ```
