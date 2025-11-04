@@ -1,5 +1,15 @@
 <script setup lang="ts">
 import type { ButtonProps } from '#ui/types'
+import type { Liff } from '@line/liff'
+
+const { $liff } = useNuxtApp()
+// const liff = await ($liff as Promise<Liff>)
+const toast = useToast()
+const { user, loginWithLine } = useUser()
+const addLineFriend = ref(false)
+
+
+
 
 const links = ref<ButtonProps[]>([
     {
@@ -17,71 +27,74 @@ const links = ref<ButtonProps[]>([
     }
 ])
 
+
+onMounted(async () => {
+  try {
+    const liff = (await $liff) as Liff  // ได้จากปลั๊กอินที่ init แล้ว
+
+    // 1) ถ้ายังไม่ล็อกอิน LIFF → เรียก login แล้วหยุด flow (จะรีไดเรกต์กลับหน้าเดิม)
+    // if (!liff.isLoggedIn()) {
+    //   liff.login()
+    //   return
+    // }
+
+    // 2) ดึงโทเคนจาก LIFF (SDK การันตีว่าเชื่อถือได้)
+    const idToken = liff.getIDToken()
+    const accessToken = liff.getAccessToken()
+    if (!idToken || !accessToken) throw new Error('No LINE tokens')
+
+    // 3) ส่งเข้า Better Auth แบบ “idToken sign-in” (จะไม่ redirect)
+    await loginWithLine(accessToken, idToken)
+
+    // 4) (ออปชัน) โหลด session เพื่อให้แน่ใจว่ามี user แล้ว
+    //   const { data: session } = await authClient.getSession()
+
+    // 5) เช็คเป็นเพื่อน OA หรือยัง (ไม่บังคับ แต่แสดง CTA ได้)
+    let friendFlag = false
+    try {
+      const res = await liff.getFriendship()
+      friendFlag = !!res?.friendFlag
+      addLineFriend.value = friendFlag
+    } catch { /* ข้ามไป ถ้า channel ยังไม่ได้ลิงก์ OA */ }
+
+    toast.add({
+      title: friendFlag ? 'ล็อกอินสำเร็จ (เป็นเพื่อน OA แล้ว)' : 'ล็อกอินสำเร็จ (ยังไม่ได้เพิ่มเพื่อน OA)',
+      color: 'success'
+    })
+  } catch (e) {
+    console.error(e)
+    toast.add({ title: 'LIFF Login Failed', color: 'error' })
+  }
+})
 </script>
 <template>
-    <div class="flex flex-col gap-16 lg:flex-row lg:items-center lg:justify-between">
-        <UPageHero 
-            headline="บริการดูแลผ้าแบบครบวงจร" 
-            description="บริการซัก อบ รีด และดูแลผ้าอย่างพิถีพิถัน ส่งตรงถึงหน้าบ้านของคุณ" 
-            :links="links"
-        >
-            <template #title>
-                <ClientOnly>
-                    <h1>
-                        <span class="text-primary">ใส่ใจ </span>
-                        <span class="text-gray-900 dark:text-white">ผ้าเรียบ</span>
-                    </h1>
-                </ClientOnly>
-            </template>
-        </UPageHero>
-        <nuxt-img src="/logo-saijai-laundry-service.png" alt="logo-saijai-laundry-service"
-            class="relative mx-auto max-w-xs sm:max-w-sm lg:max-w-md object-contain" />
+    <div>
+        <div class="flex flex-col gap-16 lg:flex-row lg:items-center lg:justify-between">
+            <UPageHero 
+                headline="บริการดูแลผ้าแบบครบวงจร"
+                description="บริการซัก อบ รีด และดูแลผ้าอย่างพิถีพิถัน ส่งตรงถึงหน้าบ้านของคุณ" :links="links">
+                <template #title>
+                    <ClientOnly>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl">
+                            <span class="text-primary">ใส่ใจ </span>
+                            <span class="text-gray-900 dark:text-white">ผ้าเรียบ</span>
+                        </h1>
+                        <h2 class="text-2xl sm:text-7xl lg:text-4xl xl:text-5xl">
+                            <span class="text-gray-900">LAUNDRY SERVICE</span>
+                        </h2>
+                    </ClientOnly>
+                </template>
+            </UPageHero>
+            <nuxt-img 
+                src="/logo-saijai-laundry-service.png" alt="logo-saijai-laundry-service"
+                class="relative mx-auto max-w-xs sm:max-w-sm lg:max-w-md object-contain" />
+        </div>
+
+        <pre>
+    {{ addLineFriend }}
+    user: {{ user || 'No Login User' }}
+</pre>
     </div>
 
-    <div class="mt-20 space-y-24">
-        <section id="per-item-pricing" class="scroll-mt-28">
-            <UPageSection
-                headline="ค่าบริการ"
-                title="แพ็กเกจและการคิดค่าบริการ"
-                description="เลือกบริการซัก อบ รีด หรือบริการเสริมอื่น ๆ ได้ตามต้องการ พร้อมราคาที่โปร่งใส"
-                orientation="horizontal"
-            />
-        </section>
 
-        <section id="monthly-membership" class="scroll-mt-28">
-            <UPageSection
-                headline="สมัครสมาชิก"
-                title="สะดวก ประหยัด ด้วยแพ็กเกจสมาชิกรายเดือน"
-                description="รับสิทธิพิเศษและส่วนลดสำหรับการใช้งานบริการซักรีดประจำ พร้อมสะสมแต้มทุกครั้ง"
-                orientation="horizontal"
-            />
-        </section>
-
-        <section id="status-tracking" class="scroll-mt-28">
-            <UPageSection
-                headline="เช็คสถานะ"
-                title="อัปเดตสถานะผ้าของคุณแบบเรียลไทม์"
-                description="ติดตามขั้นตอนตั้งแต่รับผ้าถึงส่งคืนผ่านระบบติดตามสถานะในแอป"
-                orientation="horizontal"
-            />
-        </section>
-
-        <section id="faq" class="scroll-mt-28">
-            <UPageSection
-                headline="คำถามที่พบบ่อย"
-                title="คำตอบสำหรับปัญหาที่คุณอยากรู้"
-                description="รวมคำถามเกี่ยวกับการใช้งาน การรับส่ง และการดูแลผ้า เพื่อให้คุณมั่นใจทุกขั้นตอน"
-                orientation="horizontal"
-            />
-        </section>
-
-        <section id="contact" class="scroll-mt-28">
-            <UPageSection
-                headline="ติดต่อเรา"
-                title="พร้อมดูแลทุกคำถาม"
-                description="พูดคุยกับทีมงานผ่าน LINE, โทรศัพท์ หรืออีเมล เพื่อรับการช่วยเหลือทันที"
-                orientation="horizontal"
-            />
-        </section>
-    </div>
 </template>

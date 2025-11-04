@@ -46,7 +46,7 @@ export default defineNuxtConfig({
   vite: {
     server: {
       allowedHosts: [
-        '*.ngrok-free.app'
+        'e7a9e8896a49.ngrok-free.app'
       ]
     },
     plugins: [

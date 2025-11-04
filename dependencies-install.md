@@ -3,6 +3,7 @@
 ```
 bun install
 bun prisma migrate dev
+bun prisma db push
 
 ```
 

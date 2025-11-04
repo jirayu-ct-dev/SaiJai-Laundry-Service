@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import type { NavigationMenuItem } from '@nuxt/ui'
+
+// const user = useUser()
 
 // ทำ active จาก hash เฉพาะฝั่ง client ป้องกัน SSR/CSR ไม่ตรงกัน
 const activeHash = ref('')
@@ -65,19 +67,28 @@ const items: NavigationMenuItem[] = [
 
         <template #right>
           <div v-show="!open" class="hidden md:flex items-center  gap-1.5 whitespace-nowrap shrink-0">
-              <UButton color="neutral" variant="ghost" to="https://line.me/R/ti/p/@883vmdct" target="_blank"
+              <UButton 
+                color="neutral" 
+                variant="ghost" 
+                to="https://line.me/R/ti/p/@883vmdct" 
+                target="_blank"
                 icon="i-simple-icons-line" aria-label="Line"
-                class="bg-[#06C755] shrink-0 hover:bg-[#06C755]/80 text-white rounded p-2 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60">
+                class="bg-[#06C755] shrink-0 hover:bg-[#06C755]/80 text-white rounded p-2 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60"
+              >
                 <span class="hidden md:inline">เพิ่มเพื่อน</span></UButton>
 
             <!-- Login and Register -->
             <div class="flex gap-2">
-              <NuxtLink to="/login"
-                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary hover:bg-[#000000]/8 hover:text-primary/80 dark:border-[#FFFFFF]/8 dark:hover:bg-[#FFFFFF]/8">
+              <NuxtLink 
+                to="/login"
+                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary hover:bg-[#000000]/8 hover:text-primary/80 dark:border-[#FFFFFF]/8 dark:hover:bg-[#FFFFFF]/8"
+              >
                 Login
               </NuxtLink>
-              <NuxtLink to="/sign-up"
-                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8 hover:bg-primary/80 hover:text-white/80">
+              <NuxtLink 
+                to="/sign-up"
+                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8 hover:bg-primary/80 hover:text-white/80"
+              >
                 Sign up
               </NuxtLink>
             </div>
@@ -89,11 +100,19 @@ const items: NavigationMenuItem[] = [
           <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
 
           <div class="mt-3 flex flex-col gap-2">
-            <UButton color="neutral" variant="ghost" to="https://line.me/R/ti/p/@883vmdct" target="_blank"
+            <UButton 
+              color="neutral" 
+              variant="ghost" 
+              to="https://line.me/R/ti/p/@883vmdct" 
+              target="_blank"
               icon="i-simple-icons-line">
               เพิ่มเพื่อน
             </UButton>
-            <UButton color="primary" variant="solid" icon="i-lucide-log-in" to="/login">
+            <UButton 
+              color="primary" 
+              variant="solid" 
+              icon="i-lucide-log-in" 
+              to="/login">
               Sign up
             </UButton>
             <UColorModeSelect class="w-full" />
@@ -102,7 +121,7 @@ const items: NavigationMenuItem[] = [
       </UHeader>
 
       <UMain>
-        <UContainer class=" px-7 sm:px-10 md:px-10 lg:px-12 ">
+        <UContainer class="py-6 px-7 sm:px-10 md:px-10 lg:px-12 ">
           <slot />
         </UContainer>
       </UMain>

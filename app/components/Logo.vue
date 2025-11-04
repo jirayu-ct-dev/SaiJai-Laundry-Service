@@ -1,3 +1,9 @@
+<script setup lang="ts">
+defineOptions({
+  name: 'AppLogo',
+})
+</script>
+
 <template>
   <NuxtLink to="/" class="flex items-center gap-2">
     <nuxt-img src="/logo-saijai-laundry-service.png" sizes="70" />
