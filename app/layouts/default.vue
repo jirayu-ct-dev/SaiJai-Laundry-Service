@@ -42,6 +42,7 @@ const items: NavigationMenuItem[] = [
     exactHash: true
   }
 ]
+
 </script>
 
 <template>
@@ -72,11 +73,11 @@ const items: NavigationMenuItem[] = [
             <!-- Login and Register -->
             <div class="flex gap-2">
               <NuxtLink to="/login"
-                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary">
+                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary hover:bg-[#000000]/8 hover:text-primary/80 dark:border-[#FFFFFF]/8 dark:hover:bg-[#FFFFFF]/8">
                 Login
               </NuxtLink>
               <NuxtLink to="/sign-up"
-                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8">
+                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8 hover:bg-primary/80 hover:text-white/80">
                 Sign up
               </NuxtLink>
             </div>
@@ -101,7 +102,7 @@ const items: NavigationMenuItem[] = [
       </UHeader>
 
       <UMain>
-        <UContainer class="py-6 px-7 sm:px-10 md:px-10 lg:px-12 ">
+        <UContainer class=" px-7 sm:px-10 md:px-10 lg:px-12 ">
           <slot />
         </UContainer>
       </UMain>
