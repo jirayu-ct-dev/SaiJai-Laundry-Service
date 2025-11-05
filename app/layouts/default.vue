@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-// const user = useUser()
+const { user } = useUser()
 
 // ทำ active จาก hash เฉพาะฝั่ง client ป้องกัน SSR/CSR ไม่ตรงกัน
 const activeHash = ref('')
@@ -77,21 +77,28 @@ const items: NavigationMenuItem[] = [
               >
                 <span class="hidden md:inline">เพิ่มเพื่อน</span></UButton>
 
-            <!-- Login and Register -->
-            <div class="flex gap-2">
-              <NuxtLink 
-                to="/login"
-                class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary hover:bg-[#000000]/8 hover:text-primary/80 dark:border-[#FFFFFF]/8 dark:hover:bg-[#FFFFFF]/8"
-              >
-                Login
-              </NuxtLink>
-              <NuxtLink 
-                to="/sign-up"
-                class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8 hover:bg-primary/80 hover:text-white/80"
-              >
-                Sign up
-              </NuxtLink>
+            <div v-if="user">
+              <p>{{ user.name }}</p>
             </div>
+
+            <!-- Login and Register -->
+            <div v-else>
+              <div class="flex gap-2">
+                <NuxtLink 
+                  to="/login"
+                  class="px-4 py-2.5 text-sm font-semibold transition rounded-lg border border-[#000000]/8 text-primary hover:bg-[#000000]/8 hover:text-primary/80 dark:border-[#FFFFFF]/8 dark:hover:bg-[#FFFFFF]/8"
+                >
+                  Login
+                </NuxtLink>
+                <NuxtLink 
+                  to="/sign-up"
+                  class="px-4 py-2.5 shrink-0 text-sm bg-primary text-white font-semibold transition rounded-lg border border-[#000000]/8 hover:bg-primary/80 hover:text-white/80"
+                >
+                  Sign up
+                </NuxtLink>
+              </div>
+            </div>
+
             <UColorModeButton />
           </div>
         </template>
