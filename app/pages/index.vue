@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ButtonProps } from '#ui/types'
-import { type Liff } from '@line/liff'
+import type { Liff } from '@line/liff'
 
 const { $liff } = useNuxtApp()
 // const liff = await ($liff as Promise<Liff>)
@@ -32,14 +32,14 @@ const links = ref<ButtonProps[]>([
 onMounted(async () => {
   try {
     const liff = (await $liff) as Liff  // ได้จากปลั๊กอินที่ init แล้ว
-    os.value = liff.getOS() || ''
-    if(liff.getOS() === 'web') return
+    const isClient = liff.isInClient()
+    if(!isClient) return
 
     // 1) ถ้ายังไม่ล็อกอิน LIFF → เรียก login แล้วหยุด flow (จะรีไดเรกต์กลับหน้าเดิม)
-    // if (!liff.isLoggedIn()) {
-    //   liff.login()
-    //   return
-    // }
+    if (!liff.isLoggedIn()) {
+      liff.login()
+      return
+    }
 
     // 2) ดึงโทเคนจาก LIFF (SDK การันตีว่าเชื่อถือได้)
     const idToken = liff.getIDToken()
@@ -70,6 +70,7 @@ onMounted(async () => {
   }
 })
 </script>
+
 <template>
     <div>
         <div class="flex flex-col gap-16 lg:flex-row lg:items-center lg:justify-between">
@@ -95,10 +96,9 @@ onMounted(async () => {
 
         <pre>
             os: {{ os }}
-            {{ addLineFriend }}
+            adfriend: {{ addLineFriend }}
             user: {{ user || 'No Login User' }}
         </pre>
     </div>
-
 
 </template>

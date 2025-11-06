@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const { user } = useUser()
+const { user, logout } = useUser()
 
 // ทำ active จาก hash เฉพาะฝั่ง client ป้องกัน SSR/CSR ไม่ตรงกัน
 const activeHash = ref('')
@@ -108,20 +108,48 @@ const items: NavigationMenuItem[] = [
 
           <div class="mt-3 flex flex-col gap-2">
             <UButton 
-              color="neutral" 
-              variant="ghost" 
-              to="https://line.me/R/ti/p/@883vmdct" 
-              target="_blank"
-              icon="i-simple-icons-line">
-              เพิ่มเพื่อน
+                color="neutral" 
+                variant="ghost" 
+                to="https://line.me/R/ti/p/@883vmdct" 
+                target="_blank"
+                icon="i-simple-icons-line" aria-label="Line"
+                class="bg-[#06C755] shrink-0 hover:bg-[#06C755]/80 text-white rounded p-2 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60"
+              >
+                <span>เพิ่มเพื่อน</span>
             </UButton>
-            <UButton 
-              color="primary" 
-              variant="solid" 
-              icon="i-lucide-log-in" 
-              to="/login">
-              Sign up
-            </UButton>
+
+            <div v-if="!user" class="flex flex-col gap-2">
+              <UButton
+                variant="solid" 
+                icon="i-lucide-log-in" 
+                to="/login"
+                class="text-primary w-full dark:text-white border border-primary bg-default hover:bg-primary/10"              
+              >
+                Login
+              </UButton>
+
+              <UButton 
+                color="primary" 
+                variant="solid" 
+                icon="i-lucide-log-in" 
+                to="/sign-up"
+                class="w-full border border-primary dark:text-white"
+                >
+                Sign up
+              </UButton>
+            </div>
+            <div v-else>
+              <UButton 
+                color="primary" 
+                variant="solid" 
+                icon="i-lucide-log-in" 
+                class="w-full"
+                @click="logout"
+              >
+                Logout
+              </UButton>
+            </div>
+
             <UColorModeSelect class="w-full" />
           </div>
         </template>
