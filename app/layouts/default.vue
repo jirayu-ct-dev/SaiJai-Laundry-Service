@@ -77,8 +77,11 @@ const items: NavigationMenuItem[] = [
               >
                 <span class="hidden md:inline">เพิ่มเพื่อน</span></UButton>
 
-            <div v-if="user">
-              <p>{{ user.name }}</p>
+            <div v-if="user" class="flex gap-3 items-center px-4">
+              <p class="font-medium">{{ user.name }}</p>
+              <UButton size="xs" variant="soft" color="primary" @click="logout">
+                Logout
+              </UButton>
             </div>
 
             <!-- Login and Register -->
@@ -138,11 +141,15 @@ const items: NavigationMenuItem[] = [
                 Sign up
               </UButton>
             </div>
-            <div v-else>
+            <div v-else class="flex flex-col gap-2">
+              <div class="flex items-center gap-3">
+                <UIcon name="i-lucide-user" class="h-5 w-5 text-primary" />
+                <span class="font-medium">{{ user.name }}</span>
+              </div>
               <UButton 
                 color="primary" 
                 variant="solid" 
-                icon="i-lucide-log-in" 
+                icon="i-lucide-log-out" 
                 class="w-full"
                 @click="logout"
               >

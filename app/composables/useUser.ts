@@ -72,6 +72,7 @@ export const useUser = () => {
             }
 
             console.log("Signed in:", data);
+            await getCurrentUser()
             return data
         } finally {
             finishIndicator()
@@ -97,6 +98,7 @@ export const useUser = () => {
             }
 
             console.log("Signed in:", data);
+            await getCurrentUser()
             return data
         } finally {
             finishIndicator()

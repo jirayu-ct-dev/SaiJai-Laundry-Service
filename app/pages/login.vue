@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Liff } from '@line/liff'
+import type { FormSubmitEvent, AuthFormField, ButtonProps } from '@nuxt/ui'
+import * as z from 'zod'
+
 
 interface Profile {
   userId: string;
@@ -19,10 +22,47 @@ const error = ref<string | null>(null)
 const loggedIn = ref(false)
 const profile = ref<Profile | null>(null)
 
-const input = ref({
-    email: '',
-    password: ''
+// const input = ref({
+//     email: '',
+//     password: ''
+// })
+
+const fields: AuthFormField[] = [{
+  name: 'email',
+  type: 'email',
+  label: 'Email',
+  placeholder: 'Enter your email',
+  required: true
+}, {
+  name: 'password',
+  label: 'Password',
+  type: 'password',
+  placeholder: 'Enter your password',
+  required: true
+}, {
+  name: 'remember',
+  label: 'Remember me',
+  type: 'checkbox'
+}]
+
+const providers = ref<ButtonProps[]>([
+  {
+    label: 'Line',
+    icon: 'i-simple-icons-line',
+    color: 'neutral',
+    variant: 'subtle',
+    onClick: () => {
+      void onloginWithLine()
+    }
+  }
+])
+
+const schema = z.object({
+  email: z.email('Invalid email'),
+  password: z.string('Password is required').min(8, 'Must be at least 8 characters')
 })
+
+type Schema = z.output<typeof schema>
 
 const ensureInit = async () => {
   // ปลั๊กอินเรา init แล้วตั้งแต่ตอนโหลดหน้าอยู่แล้ว
@@ -44,49 +84,53 @@ onMounted(async () => {
   }
 })
 
-const onLogin = async () => {
-    try {
-        loading.value = true
-        const data = await login(input.value.email, input.value.password)
-
-        toast.add({
-            title: `Login Successful! on email ${data.user.email}`,
-            color: 'success'
-        })
-        await navigateTo('/')
-    } catch (error) {
-        toast.add({
-            title: (error as Error).message || 'Login Failed',
-            color: 'error'
-        })
-        return
-    }
-    finally {
-        loading.value = false
-    }
+function onSubmit(payload: FormSubmitEvent<Schema>) {
+  console.log('Submitted', payload)
 }
 
-const onLoginWithGoogle = async () => {
-    try {
-        loading.value = true
-        await loginWithGoogle()
+// const onLogin = async () => {
+//     try {
+//         loading.value = true
+//         const data = await login(input.value.email, input.value.password)
 
-        toast.add({
-            title: `Login Successful! on Google`,
-            color: 'success'
-        })
-        // await navigateTo('/')
-    } catch (error) {
-        toast.add({
-            title: (error as Error).message || 'Login Failed',
-            color: 'error'
-        })
-        return
-    }
-    finally {
-        loading.value = false
-    }
-}
+//         toast.add({
+//             title: `Login Successful! on email ${data.user.email}`,
+//             color: 'success'
+//         })
+//         await navigateTo('/')
+//     } catch (error) {
+//         toast.add({
+//             title: (error as Error).message || 'Login Failed',
+//             color: 'error'
+//         })
+//         return
+//     }
+//     finally {
+//         loading.value = false
+//     }
+// }
+
+// const onLoginWithGoogle = async () => {
+//     try {
+//         loading.value = true
+//         await loginWithGoogle()
+
+//         toast.add({
+//             title: `Login Successful! on Google`,
+//             color: 'success'
+//         })
+//         // await navigateTo('/')
+//     } catch (error) {
+//         toast.add({
+//             title: (error as Error).message || 'Login Failed',
+//             color: 'error'
+//         })
+//         return
+//     }
+//     finally {
+//         loading.value = false
+//     }
+// }
 
 const onloginWithLine = async () => {
   try {
@@ -105,9 +149,8 @@ const onloginWithLine = async () => {
 </script>
 
 <template>
-    <div class="max-w-xs mx-auto">
-        <h1 class="font-bold  text-2xl mb-4">Login</h1>
-        <form @submit.prevent="onLogin">
+    <div class="max-w-md mx-auto">
+        <!-- <form @submit.prevent="onLogin">
             <div class="flex flex-col gap-1">
 
                 <UFormField label="Email">
@@ -122,12 +165,27 @@ const onloginWithLine = async () => {
                     <UButton type="submit" block :loading="loading">Sign Up</UButton>
                 </div>
             </div>
-        </form>
-        <div class="mt-4">
-            <UButton type="submit" block :loading="loading" @click="onLoginWithGoogle">Sign in with Google</UButton>
-        </div>
-        <div class="mt-4">
-            <UButton type="submit" block :loading="loading" class="bg-green-500 text-white" @click="onloginWithLine">Sign in with Line</UButton>
-        </div>
+        </form> -->
+
+        <UPageCard class="w-full max-w-md">
+      <UAuthForm
+        :schema="schema"
+        :fields="fields"
+        :providers="providers"
+        title="ลงชื่อเข้าใช้"
+        icon="i-lucide-lock"
+        @submit="onSubmit"
+      >
+        <template #description>
+          ยังไม่มีบัญชี? <ULink to="/sign-up" class="text-primary font-medium">Sign up</ULink>.
+        </template>
+        <template #password-hint>
+          <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
+        </template>
+        <template #validation>
+          <UAlert color="error" icon="i-lucide-info" title="Error signing in" />
+        </template>
+      </UAuthForm>
+    </UPageCard>
     </div>
 </template>

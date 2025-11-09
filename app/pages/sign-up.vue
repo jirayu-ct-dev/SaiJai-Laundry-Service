@@ -36,7 +36,7 @@ const onSingUp = async () => {
             <div class="flex flex-col gap-1">
                 <UFormField label="Full Name">
                     <UInput v-model="input.name" name="full_name" class="w-full" placeholder="Full Name" type="text" />
-                </UFormField>   
+                </UFormField>
 
                 <UFormField label="Email">
                     <UInput v-model="input.email" name="email" class="w-full" placeholder="Email" type="email" />

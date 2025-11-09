@@ -60,6 +60,7 @@ onMounted(async () => {
       addLineFriend.value = friendFlag
     } catch { /* ข้ามไป ถ้า channel ยังไม่ได้ลิงก์ OA */ }
 
+
     toast.add({
       title: friendFlag ? 'ล็อกอินสำเร็จ (เป็นเพื่อน OA แล้ว)' : 'ล็อกอินสำเร็จ (ยังไม่ได้เพิ่มเพื่อน OA)',
       color: 'success'
