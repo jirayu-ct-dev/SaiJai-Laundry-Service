@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Liff } from '@line/liff'
-import type { FormSubmitEvent, AuthFormField, ButtonProps } from '@nuxt/ui'
+import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 import * as z from 'zod'
 
 
@@ -15,7 +15,7 @@ interface Profile {
 const { $liff } = useNuxtApp()
 const liff = await ($liff as Promise<Liff>)
 const toast = useToast()
-const { login, loginWithGoogle } = useUser()
+const { login } = useUser()
 const loading = ref(false)
 const message = ref('')
 const error = ref<string | null>(null)
@@ -30,36 +30,25 @@ const profile = ref<Profile | null>(null)
 const fields: AuthFormField[] = [{
   name: 'email',
   type: 'email',
-  label: 'Email',
-  placeholder: 'Enter your email',
+  label: 'อีเมล',
+  placeholder: 'กรอกอีเมลของคุณ',
   required: true
 }, {
   name: 'password',
-  label: 'Password',
+  label: 'รหัสผ่าน',
   type: 'password',
-  placeholder: 'Enter your password',
+  placeholder: 'กรอกรหัสผ่านของคุณ',
   required: true
 }, {
   name: 'remember',
-  label: 'Remember me',
+  label: 'จดจำฉัน',
   type: 'checkbox'
 }]
 
-const providers = ref<ButtonProps[]>([
-  {
-    label: 'Line',
-    icon: 'i-simple-icons-line',
-    color: 'neutral',
-    variant: 'subtle',
-    onClick: () => {
-      void onloginWithLine()
-    }
-  }
-])
 
 const schema = z.object({
-  email: z.email('Invalid email'),
-  password: z.string('Password is required').min(8, 'Must be at least 8 characters')
+  email: z.email('อีเมลไม่ถูกต้อง'),
+  password: z.string('รหัสผ่านไม่ถูกต้อง').min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
 })
 
 type Schema = z.output<typeof schema>
@@ -84,8 +73,27 @@ onMounted(async () => {
   }
 })
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Submitted', payload)
+const onSubmit = async (payload: FormSubmitEvent<Schema>) => {
+  console.log('Submitted', payload.data.email, payload.data.password)
+  try {
+    loading.value = true
+    const data = await login(payload.data.email, payload.data.password)
+
+    toast.add({
+      title: `ลงชื่อเข้าใช้สำเร็จ! ${data.user.email}`,
+      color: 'success'
+    })
+    await navigateTo('/')
+  } catch (error) {
+    toast.add({
+      title: (error as Error).message || 'ลงชื่อเข้าใช้ไม่สำเร็จ',
+      color: 'error'
+    })
+    return
+  }
+  finally {
+    loading.value = false
+  }
 }
 
 // const onLogin = async () => {
@@ -132,25 +140,11 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
 //     }
 // }
 
-const onloginWithLine = async () => {
-  try {
-    await ensureInit()
-    if (!liff.isLoggedIn()) {
-      liff.login()
-      return
-    }
-    loggedIn.value = true
-    profile.value = await liff.getProfile()
-  } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : String(err)
-  }
-}
-
 </script>
 
 <template>
-    <div class="max-w-md mx-auto">
-        <!-- <form @submit.prevent="onLogin">
+  <!-- <div > -->
+  <!-- <form @submit.prevent="onLogin">
             <div class="flex flex-col gap-1">
 
                 <UFormField label="Email">
@@ -166,18 +160,26 @@ const onloginWithLine = async () => {
                 </div>
             </div>
         </form> -->
+  <ClientOnly>
+    <UPageCard class="max-w-md mx-auto">
 
-        <UPageCard class="w-full max-w-md">
-      <UAuthForm
-        :schema="schema"
-        :fields="fields"
-        :providers="providers"
-        title="ลงชื่อเข้าใช้"
-        icon="i-lucide-lock"
+      <UAuthForm 
+        :schema="schema" 
+        :fields="fields" 
+        title="ลงชื่อเข้าใช้" 
+        icon="i-lucide-lock" 
+        :submit="{
+          label: 'ลงชื่อเข้าใช้',
+          color: 'primary',
+        }" 
         @submit="onSubmit"
       >
         <template #description>
-          ยังไม่มีบัญชี? <ULink to="/sign-up" class="text-primary font-medium">Sign up</ULink>.
+          ยังไม่มีบัญชี? <ULink to="/sign-up" class="text-primary font-medium">สมัครสมาชิก</ULink>
+          <div class="my-6">
+            <ButtonLoginWithLine />
+          </div>
+          <USeparator label="หรือ" />
         </template>
         <template #password-hint>
           <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
@@ -187,5 +189,9 @@ const onloginWithLine = async () => {
         </template>
       </UAuthForm>
     </UPageCard>
-    </div>
+    <template #fallback>
+      <div class="max-w-md mx-auto" />
+    </template>
+  </ClientOnly>
+  <!-- </div> -->
 </template>

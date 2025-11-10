@@ -55,7 +55,7 @@ const onloginWithLine = async () => {
               class="group-disabled:opacity-60"
             />
           </span>
-          <span class="flex flex-1 items-center justify-center whitespace-nowrap px-6 text-center">Log in With Line</span>
+          <span class="flex flex-1 items-center justify-center whitespace-nowrap px-6 text-center">ลงชื่อเข้าใช้ด้วยไลน์</span>
           <span
             class="flex items-center self-stretch pr-2 -my-2.5 border-r border-transparent opacity-0 pointer-events-none"
             aria-hidden="true"
