@@ -143,55 +143,39 @@ const onSubmit = async (payload: FormSubmitEvent<Schema>) => {
 </script>
 
 <template>
-  <!-- <div > -->
-  <!-- <form @submit.prevent="onLogin">
-            <div class="flex flex-col gap-1">
+  <div>
+    <ClientOnly>
+      <template #fallback>
+        <div class="max-w-md mx-auto" />
+      </template>
+      <UPageCard class="max-w-md mx-auto">
 
-                <UFormField label="Email">
-                    <UInput v-model="input.email" name="email" class="w-full" placeholder="Email" type="email" />
-                </UFormField>
-
-                <UFormField label="Password">
-                    <UInput v-model="input.password" name="password" class="w-full" placeholder="Password" type="password" />
-                </UFormField>
-
-                <div class="mt-4">
-                    <UButton type="submit" block :loading="loading">Sign Up</UButton>
-                </div>
+        <UAuthForm 
+          :schema="schema" 
+          :fields="fields" 
+          title="ลงชื่อเข้าใช้" 
+          icon="i-lucide-lock" 
+          :submit="{
+            label: 'ลงชื่อเข้าใช้',
+            color: 'primary',
+          }" 
+          @submit="onSubmit"
+        >
+          <template #description>
+            ยังไม่มีบัญชี? <ULink to="/sign-up" class="text-primary font-medium">สมัครสมาชิก</ULink>
+            <div class="my-6">
+              <ButtonLoginWithLine />
             </div>
-        </form> -->
-  <ClientOnly>
-    <UPageCard class="max-w-md mx-auto">
-
-      <UAuthForm 
-        :schema="schema" 
-        :fields="fields" 
-        title="ลงชื่อเข้าใช้" 
-        icon="i-lucide-lock" 
-        :submit="{
-          label: 'ลงชื่อเข้าใช้',
-          color: 'primary',
-        }" 
-        @submit="onSubmit"
-      >
-        <template #description>
-          ยังไม่มีบัญชี? <ULink to="/sign-up" class="text-primary font-medium">สมัครสมาชิก</ULink>
-          <div class="my-6">
-            <ButtonLoginWithLine />
-          </div>
-          <USeparator label="หรือ" />
-        </template>
-        <template #password-hint>
-          <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
-        </template>
-        <template #validation>
-          <UAlert color="error" icon="i-lucide-info" title="Error signing in" />
-        </template>
-      </UAuthForm>
-    </UPageCard>
-    <template #fallback>
-      <div class="max-w-md mx-auto" />
-    </template>
-  </ClientOnly>
-  <!-- </div> -->
+            <USeparator label="หรือ" />
+          </template>
+          <template #password-hint>
+            <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
+          </template>
+          <template #validation>
+            <UAlert color="error" icon="i-lucide-info" title="Error signing in" />
+          </template>
+        </UAuthForm>
+      </UPageCard>
+    </ClientOnly>
+  </div>
 </template>

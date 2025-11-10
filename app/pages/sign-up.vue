@@ -82,40 +82,42 @@ const onSubmit = async(payload: FormSubmitEvent<Schema>) => {
 </script>
 
 <template>
-        <ClientOnly>
-          <UPageCard class="max-w-md mx-auto">
-            <UAuthForm
-              :schema="schema"
-              :fields="fields"
-              title="ลงชื่อเข้าใช้"
-              icon="i-lucide-lock"
-              :loading="loading"
-              button-label="ลงชื่อเข้าใช้"
-              :submit="{
-                label: 'สมัครสมาชิก',
-                color: 'primary',
-              }"
-              @submit="onSubmit"
-            >
-            <template #description>
-              มีบัญชีแล้ว? <ULink to="/login" class="text-primary font-medium">ลงชื่อเข้าใช้</ULink>
-              <div class="my-6">
-                <ClientOnly>
-                  <ButtonLoginWithLine />
-                </ClientOnly>
-              </div>
-              <USeparator label="หรือ" />
+        <div>
+          <ClientOnly>
+            <template #fallback>
+              <div class="max-w-md mx-auto" />
             </template>
-            <!-- <template #password-hint>
-              <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
-            </template> -->
-            <!-- <template #validation>
-              <UAlert color="error" icon="i-lucide-info" title="Error signing in" />
-            </template> -->
-            </UAuthForm>
-          </UPageCard>
-          <template #fallback>
-            <div class="max-w-md mx-auto" />
-          </template>
-        </ClientOnly>
+            <UPageCard class="max-w-md mx-auto">
+              <UAuthForm
+                :schema="schema"
+                :fields="fields"
+                title="ลงชื่อเข้าใช้"
+                icon="i-lucide-lock"
+                :loading="loading"
+                button-label="ลงชื่อเข้าใช้"
+                :submit="{
+                  label: 'สมัครสมาชิก',
+                  color: 'primary',
+                }"
+                @submit="onSubmit"
+              >
+              <template #description>
+                มีบัญชีแล้ว? <ULink to="/login" class="text-primary font-medium">ลงชื่อเข้าใช้</ULink>
+                <div class="my-6">
+                  <ClientOnly>
+                    <ButtonLoginWithLine />
+                  </ClientOnly>
+                </div>
+                <USeparator label="หรือ" />
+              </template>
+              <!-- <template #password-hint>
+                <ULink to="#" class="text-primary font-medium" tabindex="-1">ลืมรหัสผ่าน?</ULink>
+              </template> -->
+              <!-- <template #validation>
+                <UAlert color="error" icon="i-lucide-info" title="Error signing in" />
+              </template> -->
+              </UAuthForm>
+            </UPageCard>
+          </ClientOnly>
+        </div>
 </template>

@@ -45,7 +45,7 @@ const onloginWithLine = async () => {
 <template>
     <div>
         <button
-          class="group relative w-full flex items-center gap-0 bg-[#06C755] text-white rounded px-2 py-2.5 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60" 
+          class="group relative w-full cursor-pointer flex items-center gap-0 bg-[#06C755] text-white rounded px-2 py-2.5 border border-[#000000]/8 font-medium text-sm transition-all duration-150 hover:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.1)] active:shadow-[inset_0_0_0_100vmax_rgba(0,0,0,0.3)] disabled:bg-white disabled:text-[#1E1E1E]/20 disabled:border-[#E5E5E5]/60" 
           :disabled="loading"
           @click="onloginWithLine"
         >

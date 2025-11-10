@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     ]
   },
   app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
     head: {
       title: 'LIFF App',
       htmlAttrs: { lang: 'en' },
