@@ -9,9 +9,9 @@ const loading = ref(false)
 type Schema = z.output<typeof schema>
 
 const schema = z.object({
-    name: z.string('Name is required'),
-    email: z.email('Invalid email'),
-    password: z.string('Password is required').min(8, 'Must be at least 8 characters')
+    name: z.string('ชื่อไม่ถูกต้อง'),
+    email: z.email('อีเมลไม่ถูกต้อง'),
+    password: z.string('ต้องมีรหัสผ่าน').min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
 })
 
 
@@ -22,7 +22,6 @@ const fields: AuthFormField[] = [
         label: 'ชื่อ',
         placeholder: 'กรอกชื่อของคุณ',
         required: true,
-        error: 'กรุณากรอกชื่อ'
     },
     {
         name: 'email',
@@ -30,7 +29,6 @@ const fields: AuthFormField[] = [
         label: 'อีเมล',
         placeholder: 'กรอกอีเมลของคุณ',
         required: true,
-        error: 'กรุณากรอกอีเมล'
     }, 
     {
         name: 'password',
@@ -38,7 +36,6 @@ const fields: AuthFormField[] = [
         type: 'password',
         placeholder: 'กรอกรหัสผ่านของคุณ',
         required: true,
-        error: 'กรุณากรอกรหัสผ่าน'
     }
 ]
 
