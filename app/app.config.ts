@@ -29,31 +29,71 @@ export default defineAppConfig({
       }
     },
     colors: {
-        primary: 'sky',
-        secondary: 'teal',
-        neutral: 'slate'
+      primary: 'sky',
+      secondary: 'teal',
+      neutral: 'slate'
+    },
+    icons: {
+      light: 'i-ph-sun',
+      dark: 'i-ph-moon'
+    },
+    toaster: {
+      defaultVariants: {
+        position: 'top-center',
+      }
+    },
+    button: {
+      slots: {
+        base: 'cursor-pointer'
+      }
+    },
+    pageLogos: {
+      slots: {
+        root: 'relative overflow-hidden',
+        title: 'text-lg text-center font-semibold text-highlighted',
+        logos: 'mt-0',
+        logo: 'size-7 shrink-0'
+      }
+    },
+    dashboardSidebar: {
+      slots: {
+        root: 'relative hidden lg:flex flex-col min-h-svh min-w-16 w-(--width) shrink-0',
+        header: 'h-(--ui-header-height) shrink-0 flex items-center gap-1.5 px-4',
+        body: 'flex flex-col gap-4 flex-1 overflow-y-auto px-4 py-2',
+        footer: 'shrink-0 flex items-center gap-1.5 px-4 py-2',
+        toggle: '',
+        handle: '',
+        content: 'lg:hidden',
+        overlay: 'lg:hidden'
       },
-      icons: {
-        light: 'i-ph-sun',
-        dark: 'i-ph-moon'
-      },
-      toaster: {
-        defaultVariants: {
-          position: 'top-center',
-        }
-      },
-      button: {
-        slots: {
-          base: 'cursor-pointer'
-        }
-      },
-      pageLogos: {
-        slots: {
-          root: 'relative overflow-hidden',
-          title: 'text-lg text-center font-semibold text-highlighted',
-          logos: 'mt-0',
-          logo: 'size-7 shrink-0'
+      variants: {
+        menu: {
+          true: {
+            header: 'sm:px-6',
+            body: 'sm:px-6',
+            footer: 'sm:px-6'
+          }
+        },
+        side: {
+          left: {
+            root: 'border-e border-default'
+          },
+          right: {
+            root: ''
+          }
+        },
+        toggleSide: {
+          left: {
+            toggle: ''
+          },
+          right: {
+            toggle: 'ms-auto'
+          }
         }
       }
+    },
+    dashboardResizeHandle: {
+      base: 'hidden lg:block touch-none select-none cursor-ew-resize relative before:absolute before:inset-y-0 before:-left-1.5 before:-right-1.5'
     }
-  })
+  }
+})

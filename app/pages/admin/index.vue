@@ -1,10 +1,3 @@
-<script setup lang="ts">
-definePageMeta({
-  layout: 'admin',
-  middleware: 'only-admin'
-})
-</script>
-
 <template>
-  <h1>Dashboard</h1>
+  <h1>Admin Panel (for V2)</h1>
 </template>
