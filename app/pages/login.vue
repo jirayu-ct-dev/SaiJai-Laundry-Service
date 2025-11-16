@@ -47,8 +47,8 @@ const fields: AuthFormField[] = [{
 
 
 const schema = z.object({
-  email: z.email('อีเมลไม่ถูกต้อง'),
-  password: z.string('รหัสผ่านไม่ถูกต้อง').min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
+  email: z.string().email('อีเมลไม่ถูกต้อง'),
+  password: z.string().min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
 })
 
 type Schema = z.output<typeof schema>
@@ -83,6 +83,8 @@ const onSubmit = async (payload: FormSubmitEvent<Schema>) => {
       title: `ลงชื่อเข้าใช้สำเร็จ! ${data.user.email}`,
       color: 'success'
     })
+
+    // if(data.user.role)
     await navigateTo('/')
   } catch (error) {
     toast.add({

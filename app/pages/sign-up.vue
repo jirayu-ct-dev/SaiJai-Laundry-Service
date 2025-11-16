@@ -9,9 +9,9 @@ const loading = ref(false)
 type Schema = z.output<typeof schema>
 
 const schema = z.object({
-    name: z.string('ชื่อไม่ถูกต้อง'),
-    email: z.email('อีเมลไม่ถูกต้อง'),
-    password: z.string('ต้องมีรหัสผ่าน').min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
+    name: z.string().min(2, 'ชื่อไม่ถูกต้อง'),
+    email: z.string().email('อีเมลไม่ถูกต้อง'),
+    password: z.string().min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
 })
 
 

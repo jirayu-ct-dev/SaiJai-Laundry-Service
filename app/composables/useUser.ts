@@ -1,7 +1,14 @@
 import type { User } from "better-auth"
+import type { Role } from "@/generated/prisma/client"
+
+export type AuthUser = User & {
+    role?: Role | null
+}
+
+type AuthSignInResult = (Record<string, unknown> & { user: AuthUser })
 
 export const useUser = () => {
-    const user = useState<User | null>('user', () => null)
+    const user = useState<AuthUser | null>('user', () => null)
     const isClient = import.meta.client
     const { start, finish } = useLoadingIndicator()
 
@@ -30,7 +37,7 @@ export const useUser = () => {
                 return
             }
             console.log(session)
-            user.value = session.data.user
+            user.value = session.data.user as AuthUser
         } catch (error) {
             console.error(error)
             user.value = null
@@ -39,7 +46,7 @@ export const useUser = () => {
         }
     }
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string): Promise<AuthSignInResult> => {
         startIndicator()
         try {
             const { data, error } = await authClient.signIn.email({
@@ -50,14 +57,18 @@ export const useUser = () => {
                 throw new Error(error.message || 'Unknown error during login')
             }
 
+            if (!data) {
+                throw new Error('Missing authentication data')
+            }
+
             await getCurrentUser()
-            return data
+            return data as AuthSignInResult
         } finally {
             finishIndicator()
         }
     }
 
-    const loginWithGoogle = async() => {
+    const loginWithGoogle = async(): Promise<AuthSignInResult> => {
         startIndicator()
         try {
             const { data, error } = await authClient.signIn.social({
@@ -73,14 +84,18 @@ export const useUser = () => {
 
             console.log("Signed in:", data);
             await getCurrentUser()
-            return data
+            if (!data) {
+                throw new Error('Missing authentication data')
+            }
+
+            return data as AuthSignInResult
         } finally {
             finishIndicator()
         }
 
     }
 
-    const loginWithLine = async (accessToken: string, idToken: string) => {
+    const loginWithLine = async (accessToken: string, idToken: string): Promise<AuthSignInResult> => {
         startIndicator()
         try {
             const { data, error } = await authClient.signIn.social({
@@ -99,7 +114,11 @@ export const useUser = () => {
 
             console.log("Signed in:", data);
             await getCurrentUser()
-            return data
+            if (!data) {
+                throw new Error('Missing authentication data')
+            }
+
+            return data as AuthSignInResult
         } finally {
             finishIndicator()
         }

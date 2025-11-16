@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async () => {
     : undefined
 
   const session = await authClient.getSession(options)
-  console.log("Session: ", session)
+  // console.log("Session: ", session)
 
   if (session.error) {
     console.error('Failed to retrieve session', session.error)

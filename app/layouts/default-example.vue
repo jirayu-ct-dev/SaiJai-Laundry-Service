@@ -9,7 +9,6 @@ const route = useRoute()
 const primaryNav = computed<AppNavLink[]>(() => Object.values(primaryNavLinks))
 const authNav = computed<AppNavLink[]>(() => Object.values(authNavLinks))
 
-
 const isActive = (link: AppNavLink) => {
     if (link.external) {
         return false

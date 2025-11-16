@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@source "../../../content/**/*";
 
 /* @layer base {
   body {
