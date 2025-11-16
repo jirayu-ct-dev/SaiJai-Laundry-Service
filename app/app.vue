@@ -1,20 +1,41 @@
 <script setup lang="ts">
-// const { user } = useUser()
+const showApp = ref(false)
+const { start, finish } = useLoadingIndicator()
 
-await callOnce( async() => {
+onMounted(async () => {
   const { getCurrentUser } = useUser()
-  await getCurrentUser()
+  start()
+  try {
+    await getCurrentUser()
+  } finally {
+    finish()
+    showApp.value = true
+  }
 })
-
 </script>
 
 <template>
   <div>
-    <u-app>
-      <nuxt-loading-indicator />
-      <nuxt-layout>
-        <nuxt-page />
-      </nuxt-layout>
-    </u-app>
+    <NuxtLoadingIndicator />
+    <div v-show="showApp">
+      <UApp>
+        <NuxtLayout>
+          <NuxtPage />
+        </NuxtLayout>
+      </UApp>
+    </div>
   </div>
 </template>
+
+
+<style>
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.4s;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  filter: blur(1rem);
+}
+</style>

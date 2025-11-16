@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 // If your Prisma file is located elsewhere, you can change the path
-import { openAPI } from "better-auth/plugins";
+import { openAPI, customSession } from "better-auth/plugins";
 import { PrismaClient } from "@/generated/prisma/client";
+
 
 const prisma = new PrismaClient();
 export const auth = betterAuth({
@@ -13,6 +14,23 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql", // or "mysql", "postgresql", ...etc
     }),
+    plugins: [
+        customSession(async ({ user, session }) => {
+            const dbUser = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: { role: true },
+            })
+
+            return {
+                session,
+                user: {
+                    ...user,
+                    role: dbUser?.role || 'USER',
+                },
+            };
+        }),
+        openAPI(),
+    ],
     emailAndPassword: {
         enabled: true
     },
@@ -20,11 +38,11 @@ export const auth = betterAuth({
         //
     },
     socialProviders: {
-        google: {
-            prompt: "select_account",
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        },
+        // google: {
+        //     prompt: "select_account",
+        //     clientId: process.env.GOOGLE_CLIENT_ID as string,
+        //     clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        // },
         line: {
             clientId: process.env.LINE_CLIENT_ID as string,
             clientSecret: process.env.LINE_CLIENT_SECRET as string,
@@ -33,7 +51,4 @@ export const auth = betterAuth({
             // scopes are prefilled: ["openid","profile","email"]. Append if needed
         }
     },
-    plugins: [
-        openAPI()
-    ]
 });
