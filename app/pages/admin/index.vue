@@ -1,3 +1,9 @@
 <template>
-  <h1>Admin Panel (for V2)</h1>
+  <div>
+    dashboard
+  </div>
 </template>
+
+<script setup lang="ts">
+
+</script>
