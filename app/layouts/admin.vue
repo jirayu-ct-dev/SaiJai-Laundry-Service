@@ -41,14 +41,14 @@ const links = [
       }
     },
     {
-      label: 'Settings',
+      label: 'ตั้งค่าระบบ',
       to: '/admin/settings',
       icon: 'i-lucide-settings',
       defaultOpen: true,
       type: 'trigger',
       children: [
         {
-          label: 'General',
+          label: 'ทั่วไป',
           to: '/admin/settings',
           exact: true,
           onSelect: () => {
@@ -56,21 +56,35 @@ const links = [
           }
         },
         {
-          label: 'Members',
+          label: 'สมาชิก',
           to: '/admin/settings/members',
           onSelect: () => {
             open.value = false
           }
-        }, 
+        },
         {
-          label: 'Notifications',
+          label: 'แพ็คเกจรายเดือน',
+          to: '/admin/settings/packages',
+          onSelect: () => {
+            open.value = false
+          }
+        },
+        {
+          label: 'ราคาหน้าร้าน',
+          to: '/admin/settings/storefront',
+          onSelect: () => {
+            open.value = false
+          }
+        },
+        {
+          label: 'การแจ้งเตือน',
           to: '/admin/settings/notifications',
           onSelect: () => {
             open.value = false
           }
         }, 
         {
-          label: 'Security',
+          label: 'ความปลอดภัย',
           to: '/admin/settings/security',
           onSelect: () => {
             open.value = false

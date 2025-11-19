@@ -7,33 +7,37 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
+const { user } = useUser()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
-const user = ref({
-  name: 'Benjamin Canac',
+const userMenu = ref({
+  name: user.value?.name,
   avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+    src: user.value?.image || undefined,
+    alt: user.value?.name || 'User',
   }
 })
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
-  label: user.value.name,
-  avatar: user.value.avatar
+  label: userMenu.value.name,
+  avatar: userMenu.value.avatar
 }], [{
   label: 'Profile',
-  icon: 'i-lucide-user'
+  icon: 'i-lucide-user',
+  to: '/admin/settings',
+  exact: true
 }, {
-  label: 'Billing',
-  icon: 'i-lucide-credit-card'
+  label: 'อนุมัติการชำระเงิน',
+  icon: 'i-lucide-credit-card',
+  to: '/admin/payments'
 }, {
-  label: 'Settings',
+  label: 'ตั้งค่าระบบ',
   icon: 'i-lucide-settings',
-  to: '/settings'
-}], [{
+  to: '/admin/settings'
+}, ], [{
   label: 'Theme',
   icon: 'i-lucide-palette',
   children: [{
@@ -141,10 +145,8 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
   target: '_blank'
 }, {
-  label: 'GitHub repository',
-  icon: 'i-simple-icons-github',
-  to: 'https://github.com/nuxt-ui-templates/dashboard',
-  target: '_blank'
+  label: 'Line',
+  icon: 'i-simple-icons-line',
 }, {
   label: 'Log out',
   icon: 'i-lucide-log-out'
@@ -159,8 +161,9 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   >
     <UButton
       v-bind="{
-        ...user,
-        label: collapsed ? undefined : user?.name,
+        ...userMenu,
+        label: collapsed ? undefined : userMenu?.name,
+        avatar: userMenu?.avatar,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
       }"
       color="neutral"
@@ -169,7 +172,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       :square="collapsed"
       class="data-[state=open]:bg-elevated"
       :ui="{
-        trailingIcon: 'text-dimmed'
+        trailingIcon: 'text-dimmed',
       }"
     />
 
