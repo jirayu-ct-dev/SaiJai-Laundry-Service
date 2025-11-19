@@ -28,7 +28,7 @@ onMounted(async () => {
 </template>
 
 
-<style>
+<!-- <style>
 .page-enter-active,
 .page-leave-active {
   transition: all 0.4s;
@@ -38,4 +38,4 @@ onMounted(async () => {
   opacity: 0;
   filter: blur(1rem);
 }
-</style>
+</style> -->
