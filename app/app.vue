@@ -7,6 +7,8 @@ onMounted(async () => {
   start()
   try {
     await getCurrentUser()
+  } catch (error) {
+    console.error('Failed to fetch user on mount:', error)
   } finally {
     finish()
     showApp.value = true
@@ -26,16 +28,3 @@ onMounted(async () => {
     </div>
   </div>
 </template>
-
-
-<!-- <style>
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.4s;
-}
-.page-enter-from,
-.page-leave-to {
-  opacity: 0;
-  filter: blur(1rem);
-}
-</style> -->
