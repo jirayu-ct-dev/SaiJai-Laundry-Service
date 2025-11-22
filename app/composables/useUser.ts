@@ -68,7 +68,7 @@ export const useUser = () => {
         }
     }
 
-    const loginWithGoogle = async(): Promise<AuthSignInResult> => {
+    const loginWithGoogle = async (): Promise<AuthSignInResult> => {
         startIndicator()
         try {
             const { data, error } = await authClient.signIn.social({
@@ -77,7 +77,7 @@ export const useUser = () => {
                 errorCallbackURL: "/login" // ถ้ามีผิดพลาด
             })
 
-            if(error) {
+            if (error) {
                 console.log("Google sign-in failes: ", error)
                 throw new Error(error.message || 'Unknown error during login')
             }
@@ -107,7 +107,7 @@ export const useUser = () => {
                 errorCallbackURL: "/login" // ถ้ามีผิดพลาด
             })
 
-            if(error) {
+            if (error) {
                 console.log("Line sign-in failes: ", error)
                 throw new Error(error.message || 'Unknown error during login')
             }

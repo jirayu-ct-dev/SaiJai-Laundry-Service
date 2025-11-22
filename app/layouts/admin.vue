@@ -31,9 +31,9 @@ const links = [
       }
     },
     {
-      label: 'อนุมัติการชำระเงิน',
+      label: 'ลูกค้า',
       icon: 'i-lucide-shopping-basket',
-      to: '/admin/payments',
+      to: '/admin/customers',
       badge: '4',
       exact: true,
       onSelect: () => {
@@ -200,7 +200,7 @@ const groups = computed(() => [{
 </script>
 
 <template>
-    <UDashboardGroup>
+    <UDashboardGroup class="h-screen overflow-hidden">
       <UDashboardSidebar 
         id="default"
         v-model:open="open"
@@ -262,5 +262,6 @@ const groups = computed(() => [{
   flex: 1 1 0%;
   min-width: 0;
   width: 100%;
+  overflow-y: auto;
 }
 </style>
