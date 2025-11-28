@@ -36,7 +36,7 @@ export const useUser = () => {
                 user.value = null
                 return
             }
-            console.log(session)
+            
             user.value = session.data.user as AuthUser
         } catch (error) {
             console.error(error)

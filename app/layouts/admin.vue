@@ -31,10 +31,9 @@ const links = [
       }
     },
     {
-      label: 'ลูกค้า',
-      icon: 'i-lucide-shopping-basket',
+      label: 'ผู้ใช้งาน',
+      icon: 'i-lucide-users',
       to: '/admin/customers',
-      badge: '4',
       exact: true,
       onSelect: () => {
         open.value = false
