@@ -4,6 +4,8 @@ import { upperFirst } from 'scule'
 import { getPaginationRowModel } from '@tanstack/table-core'
 import type { Row } from '@tanstack/table-core'
 import type { User } from '~/types'
+import AdminCustomersAddModal from '~/components/admin/customers/AddModal.vue'
+import AdminCustomersDeleteModal from '~/components/admin/customers/DeleteModal.vue'
 
 const UAvatar = resolveComponent('UAvatar')
 const UButton = resolveComponent('UButton')
@@ -18,27 +20,43 @@ const columnFilters = ref([{
   id: 'email',
   value: ''
 }])
-const columnVisibility = ref()
-const rowSelection = ref({ 1: true })
+const columnVisibility = ref({})
+const rowSelection = ref({})
 
-const { data, status } = await useFetch<User[]>('/api/customers', {
-  lazy: true
-})
+const { data, status } = await useFetch<User[]>('/api/customers')
+
+function handleUsersRemoved(removedUsers: User[]) {
+  if (!data.value) return
+  
+  // Remove users from data array
+  
+  // console.log(removedUsers)
+  // Reset row selection
+  data.value = data.value?.filter(user => !removedUsers.some(removedUser => removedUser.id === user.id))
+  rowSelection.value = {}
+  // Show success toast
+  toast.add({
+    title: 'ลบสำเร็จ',
+    description: `ลบผู้ใช้ ${removedUsers.length} รายการ`,
+    color: 'success'
+  })
+}
+
 
 function getRowItems(row: Row<User>) {
   return [
     {
       type: 'label',
-      label: 'Actions'
+      label: 'การดำเนินการ'
     },
     {
-      label: 'Copy customer ID',
+      label: 'คัดลอก ID ลูกค้า',
       icon: 'i-lucide-copy',
       onSelect() {
         navigator.clipboard.writeText(row.original.id.toString())
         toast.add({
-          title: 'Copied to clipboard',
-          description: 'Customer ID copied to clipboard'
+          title: 'คัดลอกแล้ว',
+          description: 'คัดลอก ID ลูกค้าแล้ว'
         })
       }
     },
@@ -46,24 +64,24 @@ function getRowItems(row: Row<User>) {
       type: 'separator'
     },
     {
-      label: 'View customer details',
+      label: 'ดูรายละเอียดลูกค้า',
       icon: 'i-lucide-list'
     },
     {
-      label: 'View customer payments',
+      label: 'ดูประวัติการชำระเงิน',
       icon: 'i-lucide-wallet'
     },
     {
       type: 'separator'
     },
     {
-      label: 'Delete customer',
+      label: 'ลบลูกค้า',
       icon: 'i-lucide-trash',
       color: 'error',
       onSelect() {
         toast.add({
-          title: 'Customer deleted',
-          description: 'The customer has been deleted.'
+          title: 'ลบลูกค้าแล้ว',
+          description: 'ลบลูกค้าเรียบร้อยแล้ว'
         })
       }
     }
@@ -74,20 +92,20 @@ const columns: TableColumn<User>[] = [
   {
     id: 'select',
     header: ({ table }) =>
-      h(UCheckbox, {
+      h('div', h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
           ? 'indeterminate'
           : table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
           table.toggleAllPageRowsSelected(!!value),
         'ariaLabel': 'Select all'
-      }),
+      })),
     cell: ({ row }) =>
-      h(UCheckbox, {
+      h('div', h(UCheckbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
         'ariaLabel': 'Select row'
-      })
+      }))
   },
   {
     accessorKey: 'id',
@@ -95,7 +113,7 @@ const columns: TableColumn<User>[] = [
   },
   {
     accessorKey: 'name',
-    header: 'Name',
+    header: 'ชื่อผู้ใช้',
     cell: ({ row }) => {
       return h('div', { class: 'flex items-center gap-3' }, [
         h(UAvatar, {
@@ -114,10 +132,10 @@ const columns: TableColumn<User>[] = [
     header: ({ column }) => {
       const isSorted = column.getIsSorted()
 
-      return h(UButton, {
+      return h('div', h(UButton, {
         color: 'neutral',
         variant: 'ghost',
-        label: 'Email',
+        label: 'อีเมล',
         icon: isSorted
           ? isSorted === 'asc'
             ? 'i-lucide-arrow-up-narrow-wide'
@@ -125,30 +143,49 @@ const columns: TableColumn<User>[] = [
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
         onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-      })
+      }))
     }
   },
   {
-    accessorKey: 'location',
-    header: 'Location',
-    cell: ({ row }) => row.original.location
+    accessorKey: 'role',
+    header: 'บทบาท',
+    cell: ({ row }) => row.original.role
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    filterFn: 'equals',
+    accessorKey: 'package',
+    header: 'แพคเกจ',
     cell: ({ row }) => {
-      const color = {
-        subscribed: 'success' as const,
-        unsubscribed: 'error' as const,
-        bounced: 'warning' as const
-      }[row.original.status]
-
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.original.status
-      )
+      const packageValue = row.original.package || 'None'
+      const color = row.original.package === 'Basic' ? 'primary' : row.original.package === 'Standard' ? 'info' : row.original.package === 'Premium' ? 'success' : 'neutral'
+      return h('div', h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => packageValue))
     }
   },
+  // {
+  //   accessorKey: 'status',
+  //   header: 'Status',
+  //   filterFn: 'equals',
+  //   cell: ({ row }) => {
+  //     const color = {
+  //       subscribed: 'success' as const,
+  //       unsubscribed: 'error' as const,
+  //   }
+  // },
+  // {
+  //   accessorKey: 'status',
+  //   header: 'Status',
+  //   filterFn: 'equals',
+  //   cell: ({ row }) => {
+  //     const color = {
+  //       subscribed: 'success' as const,
+  //       unsubscribed: 'error' as const,
+  //       bounced: 'warning' as const
+  //     }[row.original.status]
+
+  //     return h('div', h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
+  //       row.original.status
+  //     ))
+  //   }
+  // },
   {
     id: 'actions',
     cell: ({ row }) => {
@@ -176,18 +213,32 @@ const columns: TableColumn<User>[] = [
   }
 ]
 
-const statusFilter = ref('all')
+const packageFilter = ref('all')
+const roleFilter = ref('all')
 
-watch(() => statusFilter.value, (newVal) => {
+watch(() => packageFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
 
-  const statusColumn = table.value.tableApi.getColumn('status')
-  if (!statusColumn) return
+  const packageColumn = table.value.tableApi.getColumn('package')
+  if (!packageColumn) return
 
   if (newVal === 'all') {
-    statusColumn.setFilterValue(undefined)
+    packageColumn.setFilterValue(undefined)
   } else {
-    statusColumn.setFilterValue(newVal)
+    packageColumn.setFilterValue(newVal)
+  }
+})
+
+watch(() => roleFilter.value, (newVal) => {
+  if (!table?.value?.tableApi) return
+
+  const roleColumn = table.value.tableApi.getColumn('role')
+  if (!roleColumn) return
+
+  if (newVal === 'all') {
+    roleColumn.setFilterValue(undefined)
+  } else {
+    roleColumn.setFilterValue(newVal)
   }
 })
 
@@ -206,7 +257,9 @@ const pagination = ref({
         </template>
 
         <template #right>
-          <CustomersAddModal />
+          <ClientOnly>
+            <AdminCustomersAddModal />
+          </ClientOnly>
         </template>
       </UDashboardNavbar>
     </template>
@@ -217,40 +270,69 @@ const pagination = ref({
           :model-value="(table?.tableApi?.getColumn('email')?.getFilterValue() as string)"
           class="max-w-sm"
           icon="i-lucide-search"
-          placeholder="Filter emails..."
+          placeholder="ค้นหาอีเมล..."
           @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)"
         />
 
         <div class="flex flex-wrap items-center gap-1.5">
-          <CustomersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
-            <UButton
-              v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-              label="Delete"
-              color="error"
-              variant="subtle"
-              icon="i-lucide-trash"
+          <ClientOnly>
+            <AdminCustomersDeleteModal
+              :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+              :selected-users="table?.tableApi?.getFilteredSelectedRowModel().rows.map((row: Row<User>) => row.original)"
+              @users-removed-selected="(removedUsers: User[]) => {
+                removedUsers.forEach(user => {
+                  const rowIndex = table?.tableApi?.getRowModel().rows.findIndex(row => row.original.id === user.id)
+                  if (rowIndex !== undefined && rowIndex >= 0) {
+                    table?.tableApi?.getRowModel().rows[rowIndex]?.toggleSelected(false)
+                  }
+                })
+              }"
+              @users-removed="handleUsersRemoved"
             >
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </CustomersDeleteModal>
+              <UButton
+                v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+                label="ลบ"
+                color="error"
+                variant="subtle"
+                icon="i-lucide-trash"
+              >
+                <template #trailing>
+                  <UKbd>
+                    {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+                  </UKbd>
+                </template>
+              </UButton>
+            </AdminCustomersDeleteModal>
+          </ClientOnly>
 
           <USelect
-            v-model="statusFilter"
+            v-model="roleFilter"
             :items="[
-              { label: 'All', value: 'all' },
-              { label: 'Subscribed', value: 'subscribed' },
-              { label: 'Unsubscribed', value: 'unsubscribed' },
-              { label: 'Bounced', value: 'bounced' }
+              { label: 'บทบาททั้งหมด', value: 'all' },
+              { label: 'ผู้ดูแลระบบ', value: 'admin' },
+              { label: 'พนักงาน', value: 'employee' },
+              { label: 'ผู้ใช้', value: 'user' }
             ]"
             :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
-            placeholder="Filter status"
+            placeholder="กรองตามบทบาท"
+            class="min-w-28"
+          />
+          <USelect
+            v-model="packageFilter"
+            :items="[
+              { label: 'แพ็คเกจทั้งหมด', value: 'all' },
+              { label: 'Basic', value: 'basic' },
+              { label: 'Standard', value: 'standard' },
+              { label: 'Premium', value: 'premium' },
+              { label: 'รอการอนุมัติ', value: 'รอการอนุมัติ' },
+              { label: 'ไม่มี', value: null }
+            ]"
+            :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
+            placeholder="กรองตามแพ็คเกจ"
             class="min-w-28"
           />
           <UDropdownMenu
+            class="cursor-pointer"
             :items="
               table?.tableApi
                 ?.getAllColumns()
@@ -270,7 +352,7 @@ const pagination = ref({
             :content="{ align: 'end' }"
           >
             <UButton
-              label="Display"
+              label="แสดงคอลัมน์"
               color="neutral"
               variant="outline"
               trailing-icon="i-lucide-settings-2"
@@ -296,7 +378,7 @@ const pagination = ref({
           base: 'table-fixed border-separate border-spacing-0',
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
+          th: 'py-2 font-medium first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
           td: 'border-b border-default',
           separator: 'h-0'
         }"
@@ -304,8 +386,8 @@ const pagination = ref({
 
       <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
         <div class="text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+          เลือก {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }}
+          จาก {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} แถวทั้งหมด
         </div>
 
         <div class="flex items-center gap-1.5">

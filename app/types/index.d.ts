@@ -1,6 +1,7 @@
 import type { AvatarProps } from '@nuxt/ui'
 
-export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
+export type Role = 'admin' | 'employee' | 'user'
+export type Package = 'Basic' | 'Standard' | 'Premium' | 'รอการอนุมัติ' | null
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
 export interface User {
@@ -8,8 +9,8 @@ export interface User {
   name: string
   email: string
   avatar?: AvatarProps
-  status: UserStatus
-  location: string
+  role: Role
+  package?: Package
 }
 
 export interface Mail {
@@ -24,7 +25,7 @@ export interface Mail {
 export interface Member {
   name: string
   username: string
-  role: 'member' | 'owner'
+  role: Role
   avatar: AvatarProps
 }
 
