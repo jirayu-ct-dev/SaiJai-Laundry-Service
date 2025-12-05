@@ -18,8 +18,8 @@ datasource db {
 
 enum Role {
   User
-  EMPLOYEE
-  ADMIN
+  Employee
+  Admin
 }
 
 enum OrderType {
