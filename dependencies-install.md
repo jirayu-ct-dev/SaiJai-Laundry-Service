@@ -26,6 +26,8 @@ bun install @prisma/client
 bun prisma init
 
 bun prisma db push
+bun prisma migrate dev
+npx prisma generate
 bunx @better-auth/cli@latest generate
 
 bun install --save @line/liff

@@ -1,0 +1,109 @@
+{
+    "orders": [
+        {
+            "id": 1,
+            "customer": {
+                "id": "cuid_customer_001",
+                "lineUserId": "ulineid3",
+                "name": "customer1",
+                "email": "customer1@gmail.com",
+                "image": "",
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z"
+            },
+            "employee": {
+                "id": "cuid_employee_001",
+                "lineUserId": "ulineid2",
+                "name": "employee1",
+                "email": "employee1@gmail.com",
+                "image": "",
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z"
+            },
+            "orderType": "PACKAGE",
+            "currentStatus": "PENDING_CHECK",
+            "userPackageId": {
+                "id": 1,
+                "userId": "uuid123",
+                "packageId": {
+                    "id": 1,
+                    "name": "แพ็คเกจ 1",
+                    "price": 100,
+                    "laundryCredits": 100,
+                    "durationDays": 30,
+                    "includesDelivery": true,
+                    "isActive": true
+                },
+                "status": "ACTIVE",
+                "startDate": "2025-10-05T13:33:59.000Z",
+                "endDate": "2025-12-05T13:33:59.000Z",
+                "remainingCredits": 100
+            },
+            "creditsUsed": 10,
+            "totalAmount": null,
+            "basket": {
+                "id": 5,
+                "qrCode": "BSK-A1-QR-0005",
+                "label": "A1"
+            },
+            "notes": "แยกสีผ้าขาว",
+            "deliveryAddress": {
+                "id": 12,
+                "addressLine1": "123/4",
+                "addressLine2": "หอ A ห้อง 203",
+                "subdistrict": "ในเมือง",
+                "district": "เมืองบุรีรัมย์",
+                "province": "บุรีรัมย์",
+                "postalCode": "31000",
+                "latitude": 14.9932,
+                "longitude": 103.1029,
+                "isDefault": true
+            },
+            "deliveryAddressSnapshot": {
+                "addressLine1": "123/4",
+                "addressLine2": "หอ A ห้อง 203",
+                "subdistrict": "ในเมือง",
+                "district": "เมืองบุรีรัมย์",
+                "province": "บุรีรัมย์",
+                "postalCode": "31000",
+                "latitude": 14.9932,
+                "longitude": 103.1029
+            },
+            "orderItem": {
+                "id": 1,
+                "orderId": 1,
+                "storefrontPriceId": [
+                    {
+                        "id": 1,
+                        "serviceId": {
+                            "id": 1,
+                            "name": "ซักอบรีด"
+                        },
+                        "itemId": {
+                            "id": 1,
+                            "name": "เสื้อยืด"
+                        },
+                        "price": 100
+                    },
+                    {
+                        "id": 2,
+                        "serviceId": {
+                            "id": 2,
+                            "name": "ซักอย่างเดียว"
+                        },
+                        "itemId": {
+                            "id": 2,
+                            "name": "กางเกง"
+                        },
+                        "price": 100
+                    }
+                ],
+                "quantity": 1,
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z"
+            },
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:40:10.000Z"
+        }
+    ]
+}

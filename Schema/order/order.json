@@ -1,0 +1,61 @@
+{
+    "orders": [
+        {
+            "id": 1,
+            "customerId": "cuid_customer_001",
+            "employeeId": "cuid_employee_001",
+            "orderType": "PACKAGE",
+            "currentStatus": "PENDING_CHECK",
+            "userPackageId": 101,
+            "creditsUsed": 10,
+            "totalAmount": null,
+            "basketId": 5,
+            "notes": "ขอรีดเรียบๆ",
+            "deliveryAddressId": 12,
+            "deliveryAddressSnapshot": {
+                "addressLine1": "123/4",
+                "addressLine2": "หอ A ห้อง 203",
+                "subdistrict": "ในเมือง",
+                "district": "เมืองบุรีรัมย์",
+                "province": "บุรีรัมย์",
+                "postalCode": "31000",
+                "latitude": 14.9932,
+                "longitude": 103.1029
+            },
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:40:10.000Z",
+            "deletedAt": null
+        }
+    ],
+    "orderItem": [
+        {
+            "id": 1,
+            "orderId": 1,
+            "storefrontPriceId": {
+                "id": 1,
+                "serviceId": {
+                    "id": 1,
+                    "name": "ซักอบรีด",
+                    "createdAt": "2025-12-05T13:33:59.000Z",
+                    "updatedAt": "2025-12-05T13:33:59.000Z"
+                },
+                "itemId": {
+                    "id": 1,
+                    "name": "เสื้อยืด",
+                    "createdAt": "2025-12-05T13:33:59.000Z",
+                    "updatedAt": "2025-12-05T13:33:59.000Z"
+                },
+                "price": 100,
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z",
+                "deletedAt": null,
+                "deletedBy": null
+            },
+            "quantity": 1,
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:33:59.000Z",
+            "deletedAt": null,
+            "deletedBy": null
+        }
+    ]
+}

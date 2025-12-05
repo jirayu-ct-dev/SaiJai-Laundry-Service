@@ -1,0 +1,64 @@
+{
+    "orders": [
+        {
+            "id": 2,
+            "customer": {
+                "id": "cuid_customer_002",
+                "lineUserId": "ulineid4",
+                "name": "customer2",
+                "email": "customer2@gmail.com",
+                "image": ""
+            },
+            "employee": null,
+            "orderType": "STOREFRONT",
+            "currentStatus": "PENDING_CHECK",
+            "userPackageId": null,
+            "creditsUsed": null,
+            "totalAmount": 120.00,
+            "basket": {
+                "id": 8,
+                "qrCode": "BSK-B3-QR-0008",
+                "label": "B3"
+            },
+            "notes": "",
+            "deliveryAddress": null,
+            "deliveryAddressSnapshot": null,
+            
+            "orderItem": {
+                "id": 1,
+                "orderId": 1,
+                "storefrontPriceId": [
+                    {
+                        "id": 1,
+                        "serviceId": {
+                            "id": 1,
+                            "name": "ซักอบรีด"
+                        },
+                        "itemId": {
+                            "id": 1,
+                            "name": "เสื้อยืด"
+                        },
+                        "price": 100
+                    },
+                    {
+                        "id": 2,
+                        "serviceId": {
+                            "id": 2,
+                            "name": "ซักอย่างเดียว"
+                        },
+                        "itemId": {
+                            "id": 2,
+                            "name": "กางเกง"
+                        },
+                        "price": 100
+                    }
+                ],
+                "quantity": 1,
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z"
+            },
+            "createdAt": "2025-12-05T14:01:00.000Z",
+            "updatedAt": "2025-12-05T14:01:00.000Z"
+        }
+    ]
+}
