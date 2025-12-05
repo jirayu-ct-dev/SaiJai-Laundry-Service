@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
+import z4 from 'zod/v4'
 
 
 const toast = useToast()
@@ -10,7 +11,7 @@ type Schema = z.output<typeof schema>
 
 const schema = z.object({
     name: z.string().min(2, 'ชื่อไม่ถูกต้อง'),
-    email: z.string().email('อีเมลไม่ถูกต้อง'),
+    email: z.email('อีเมลไม่ถูกต้อง'),
     password: z.string().min(8, 'ต้องมีอย่างน้อย 8 ตัวอักษร')
 })
 
