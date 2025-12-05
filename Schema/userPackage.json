@@ -1,0 +1,17 @@
+{
+    "userPackage": [
+        {
+            "id": 1,
+            "userId": "uuid123",
+            "packageId": "uuid123",
+            "status": "ACTIVE",
+            "startDate": "2025-10-05T13:33:59.000Z",
+            "endDate": "2025-12-05T13:33:59.000Z",
+            "remainingCredits": 100,
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:33:59.000Z",
+            "deletedAt": null,
+            "deletedBy": null
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "user": [
+        {
+            "id": "uuid123",
+            "name": "jirayu",
+            "email": "jiray@me.com",
+            "emailVerified": "f",
+            "image": "",
+            "phoneNumber": "0812345678",
+            "lineUserid": "u12345678",
+            "password": "123456",
+            "role": "User",
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:33:59.000Z",
+            "deletedAt": "2025-12-05T13:33:59.000Z",
+            "deletedBy": "uuid123"
+        }
+    ],
+    "user_package": [
+        {
+            "id": 1,
+            "userId": "uuid123",
+            "packageId": {
+                "id": 1,
+                "name": "แพ็คเกจ 1",
+                "price": 100,
+                "laundryCredits": 100,
+                "durationDays": 30,
+                "includesDelivery": true,
+                "isActive": true,
+                "createdAt": "2025-12-05T13:33:59.000Z",
+                "updatedAt": "2025-12-05T13:33:59.000Z",
+                "deletedAt": null,
+                "deletedBy": null
+            },
+            "status": "ACTIVE",
+            "startDate": "2025-12-05T13:33:59.000Z",
+            "endDate": "2025-12-05T13:33:59.000Z",
+            "remainingCredits": 100,
+            "image": "",
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:33:59.000Z",
+            "deletedAt": null,
+            "deletedBy": null
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{
+    "package": [
+        {
+            "id": 1,
+            "name": "แพ็คเกจ 1",
+            "price": 100,
+            "laundryCredits": 100,
+            "durationDays": 30,
+            "includesDelivery": true,
+            "isActive": true,
+            "createdAt": "2025-12-05T13:33:59.000Z",
+            "updatedAt": "2025-12-05T13:33:59.000Z",
+            "deletedAt": null,
+            "deletedBy": null
+        }
+    ]
+}

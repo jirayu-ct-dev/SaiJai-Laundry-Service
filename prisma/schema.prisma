@@ -12,41 +12,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ------------------------------------------
-// 1. ENUMS (สถานะต่างๆ)
-// ------------------------------------------
+//// -------------------------------------- ////
+////               ENUMS                    ////
+//// -------------------------------------- ////
 
 enum Role {
-  User // ลูกค้าทั่วไป (ใช้ User ตาม Better Auth default)
-  EMPLOYEE // พนักงานร้าน
-  ADMIN // เจ้าของร้าน/ผู้ดูแล
+  User
+  EMPLOYEE
+  ADMIN
 }
 
 enum OrderType {
-  PACKAGE // ออเดอร์แบบรายเดือน (หักเครดิต)
-  STOREFRONT // ออเดอร์แบบหน้าร้าน (คิดเงินตามชิ้น)
+  PACKAGE
+  STOREFRONT
 }
 
 enum OrderStatus {
-  PENDING_CHECK // รอตรวจสอบผ้า/ยืนยัน
-  WASHING // กำลังซัก
-  DRYING // กำลังตาก/อบ
-  IRONING // กำลังรีด
-  READY_FOR_PICKUP // แพ็คพร้อมส่ง/รอรับ
-  COMPLETED // ลูกค้ารับผ้าแล้ว (จบงาน)
-  CANCELLED // ยกเลิก
+  PENDING_CHECK
+  WASHING
+  DRYING
+  IRONING
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
 }
 
 enum PackageStatus {
-  PENDING // รออนุมัติ (เพิ่งสมัคร/ส่งสลิป)
-  ACTIVE // ใช้งานได้
-  EXPIRED // หมดอายุ/เครดิตหมด
+  PENDING
+  ACTIVE
+  EXPIRED
 }
 
 enum PaymentStatus {
-  PENDING // รอตรวจสอบสลิป
-  VERIFIED // ตรวจสอบแล้ว (ผ่าน)
-  FAILED // สลิปไม่ผ่าน/ปฏิเสธ
+  PENDING
+  VERIFIED
+  FAILED
 }
 
 // ------------------------------------------
@@ -54,31 +54,35 @@ enum PaymentStatus {
 // ------------------------------------------
 
 model User {
-  id            String    @id @default(cuid()) // Better Auth ใช้ String ID
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  id            String   @id @default(cuid())
+  name          String?
+  email         String?  @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  role          Role      @default(User)
-  
-  // เพิ่มเติมสำหรับ Business Logic
-  phoneNumber   String?
-  lineUserId    String?   @unique // สำหรับส่ง Push Notification
-  points        Int       @default(0) // แต้มสะสม
+  role          Role     @default(User)
+
+  phoneNumber String?
+  lineUserId  String?  @unique
+  points      Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // --- Relations ---
-  sessions              Session[]
-  accounts              Account[]
-  userPackages          UserPackage[]
-  paymentTransactions   PaymentTransaction[] // ประวัติการโอนเงิน
-  customerOrders        Order[]              @relation("CustomerOrders")
-  employeeOrders        Order[]              @relation("EmployeeOrders")
-  customerStatusHistory OrderStatusHistory[] @relation("CustomerStatusHistory")
-  employeeHistory       OrderStatusHistory[] @relation("EmployeeHistory")
-  userAddresses         UserAddress[]
+  // Relations
+  sessions      Session[]
+  accounts      Account[]
+  addresses     UserAddress[]
+  packages      UserPackage[]
+  payments      PaymentTransaction[] @relation("PaymentUser")
+  verifiedPays  PaymentTransaction[] @relation("PaymentVerifiedBy")
+
+  customerOrders Order[]            @relation("OrderCustomer")
+  employeeOrders Order[]            @relation("OrderEmployee")
+
+  statusAsEmployee OrderStatusHistory[] @relation("StatusEmployee")
+  statusAsCustomer OrderStatusHistory[] @relation("StatusCustomer")
+
+  priceChanges StorefrontPriceHistory[]
 
   @@map("user")
 }
@@ -127,38 +131,42 @@ model Verification {
   @@map("verification")
 }
 
-// ------------------------------------------
-// 3. PACKAGE & SUBSCRIPTION (ระบบสมาชิก)
-// ------------------------------------------
+//// -------------------------------------- ////
+////         PACKAGE / SUBSCRIPTION         ////
+//// -------------------------------------- ////
 
 model Package {
-  id               Int     @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   name             String
-  price            Decimal @db.Decimal(10, 2)
-  laundryCredits   Int // เครดิตสำหรับซักทั่วไป (ชิ้น)
-  durationDays     Int // อายุใช้งาน (วัน)
-  includesDelivery Boolean @default(false)
-  isActive         Boolean @default(true) // เปิดขายหรือไม่
+  price            Decimal  @db.Decimal(10, 2)
+  laundryCredits   Int
+  durationDays     Int
+  includesDelivery Boolean  @default(false)
+  isActive         Boolean  @default(true)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft Delete
+  deletedAt DateTime?
 
-  // --- Relations ---
+  inclusions   PackageInclusion[]
   userPackages UserPackage[]
-  inclusions   PackageInclusion[] // ของแถมในแพ็คเกจ
+
+  @@index([isActive])
+  @@map("packages")
 }
 
-// ตารางเก็บ "ของแถม" ในแพ็คเกจ (เช่น แถมซักผ้านวมฟรี 1 ผืน)
 model PackageInclusion {
   id                Int    @id @default(autoincrement())
   packageId         Int
-  storefrontPriceId BigInt // อ้างอิง ID ของราคาหน้าร้าน (เช่น ID ของผ้านวม)
-  quantityLimit     Int // จำนวนที่แถม
+  storefrontPriceId BigInt
+  quantityLimit     Int
 
-  // --- Relations ---
-  package         Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
+  package          Package         @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  storefrontPrice  StorefrontPrice @relation(fields: [storefrontPriceId], references: [id], onDelete: Restrict)
+
+  @@index([packageId])
+  @@index([storefrontPriceId])
+  @@map("package_inclusions")
 }
 
 model UserPackage {
@@ -166,216 +174,300 @@ model UserPackage {
   userId           String
   packageId        Int
   status           PackageStatus @default(PENDING)
-  startDate        DateTime? // เริ่มนับเมื่อ status = ACTIVE
-  endDate          DateTime? // หมดอายุเมื่อไร
-  remainingCredits Int // เครดิตทั่วไปคงเหลือ
+
+  startDate        DateTime?
+  endDate          DateTime?
+  remainingCredits Int?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  // --- Relations ---
-  user         User               @relation(fields: [userId], references: [id])
-  package      Package            @relation(fields: [packageId], references: [id])
-  orders       Order[] // ใช้กับออเดอร์ไหนบ้าง
-  transactions PaymentTransaction[] // สลิปโอนเงินรายการไหนที่ซื้อแพ็คเกจนี้
-  usageHistory UserPackageUsage[] // ประวัติการใช้ของแถม
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
-  @@index([userId, status])
+  usages        UserPackageUsage[]
+  creditLedgers PackageCreditLedger[]
+  orders        Order[]
+  payment       PaymentTransaction?
+
+  @@index([userId, status, endDate])
+  @@map("user_packages")
 }
 
-// ตารางบันทึกการใช้ "ของแถม" ของลูกค้า (Cross-selling usage)
 model UserPackageUsage {
   id                BigInt @id @default(autoincrement())
   userPackageId     BigInt
   storefrontPriceId BigInt
-  quantityUsed      Int    @default(0) // ใช้ไปแล้วกี่สิทธิ์
-  quantityLimit     Int // สิทธิ์ทั้งหมดที่มี (Copy มาจาก Inclusion)
+  quantityUsed      Int    @default(0)
+  quantityLimit     Int
 
-  // --- Relations ---
-  userPackage     UserPackage     @relation(fields: [userPackageId], references: [id])
-  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
+  userPackage     UserPackage     @relation(fields: [userPackageId], references: [id], onDelete: Cascade)
+  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id], onDelete: Restrict)
+
+  @@unique([userPackageId, storefrontPriceId])
+  @@map("user_package_usages")
 }
 
-// ------------------------------------------
-// 4. FINANCIAL (การเงิน) *สำคัญมากที่เพิ่มมา*
-// ------------------------------------------
+model PackageCreditLedger {
+  id            BigInt   @id @default(autoincrement())
+  userPackageId BigInt
+  orderId       BigInt?
+  delta         Int
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  userPackage UserPackage @relation(fields: [userPackageId], references: [id], onDelete: Cascade)
+  order       Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([userPackageId])
+  @@index([orderId])
+  @@map("package_credit_ledgers")
+}
+
+//// -------------------------------------- ////
+////               FINANCIAL                ////
+//// -------------------------------------- ////
 
 model PaymentTransaction {
   id            BigInt        @id @default(autoincrement())
-  userId        String // คนจ่าย
-  userPackageId BigInt // จ่ายค่าแพ็คเกจไหน
+  userId        String
+  userPackageId BigInt        @unique
   amount        Decimal       @db.Decimal(10, 2)
-  slipUrl       String // รูปสลิป (Cloudinary)
+  slipUrl       String?
   status        PaymentStatus @default(PENDING)
-  verifiedById  String? // Admin คนไหนเป็นคนกดยืนยัน
+  verifiedById  String?
 
-  createdAt DateTime @default(now())
   verifiedAt DateTime?
+  createdAt  DateTime @default(now())
 
-  // --- Relations ---
-  user        User        @relation(fields: [userId], references: [id])
-  userPackage UserPackage @relation(fields: [userPackageId], references: [id])
+  user        User        @relation("PaymentUser", fields: [userId], references: [id], onDelete: Cascade)
+  userPackage UserPackage @relation(fields: [userPackageId], references: [id], onDelete: Cascade)
+  verifiedBy  User?       @relation("PaymentVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("payment_transactions")
 }
 
-// ------------------------------------------
-// 5. STOREFRONT (หน้าร้าน)
-// ------------------------------------------
+//// -------------------------------------- ////
+////              STOREFRONT                ////
+//// -------------------------------------- ////
 
 model StorefrontService {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique // เช่น ซักอบรีด, ซักแห้ง
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
   deletedAt DateTime?
 
   prices StorefrontPrice[]
+
+  @@unique([name])
+  @@map("storefront_services")
 }
 
 model StorefrontItem {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique // เช่น เสื้อเชิ้ต, ผ้านวม
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
   deletedAt DateTime?
 
   prices StorefrontPrice[]
+
+  @@unique([name])
+  @@map("storefront_items")
 }
 
 model StorefrontPrice {
-  id        BigInt  @id @default(autoincrement())
+  id        BigInt   @id @default(autoincrement())
   serviceId Int
   itemId    Int
-  price     Decimal @db.Decimal(10, 2) // ราคาปัจจุบัน
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  price     Decimal  @db.Decimal(10, 2)
   deletedAt DateTime?
 
-  // --- Relations ---
-  service StorefrontService @relation(fields: [serviceId], references: [id])
-  item    StorefrontItem    @relation(fields: [itemId], references: [id])
-  
-  // Relations to usage
-  orderItems        OrderItem[]
-  packageInclusions PackageInclusion[]
-  userUsage         UserPackageUsage[]
+  service StorefrontService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  item    StorefrontItem    @relation(fields: [itemId], references: [id], onDelete: Restrict)
 
-  @@unique([serviceId, itemId, deletedAt])
+  orderItems OrderItem[]
+  inclusions PackageInclusion[]
+  usages     UserPackageUsage[]
+  history    StorefrontPriceHistory[]
+
+  @@unique([serviceId, itemId])
+  @@index([serviceId])
+  @@index([itemId])
+  @@map("storefront_prices")
 }
 
-// ------------------------------------------
-// 6. ORDER (ระบบจัดการงาน)
-// ------------------------------------------
+model StorefrontPriceHistory {
+  id                BigInt  @id @default(autoincrement())
+  storefrontPriceId BigInt
+  oldPrice          Decimal @db.Decimal(10, 2)
+  newPrice          Decimal @db.Decimal(10, 2)
+  changedAt         DateTime @default(now())
+  changedById       String
+  note              String?
+
+  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id], onDelete: Cascade)
+  changedBy        User            @relation(fields: [changedById], references: [id], onDelete: Restrict)
+
+  @@index([storefrontPriceId])
+  @@index([changedAt])
+  @@map("storefront_price_histories")
+}
+
+//// -------------------------------------- ////
+////                BASKET                  ////
+//// -------------------------------------- ////
+
+model Basket {
+  id        BigInt  @id @default(autoincrement())
+  qrCode    String  @unique
+  label     String?
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("baskets")
+}
+
+//// -------------------------------------- ////
+////                 ORDER                  ////
+//// -------------------------------------- ////
 
 model Order {
-  id                BigInt      @id @default(autoincrement())
-  customerId        String
-  employeeId        String?
-  orderType         OrderType
-  currentStatus     OrderStatus @default(PENDING_CHECK)
-  
-  // ส่วนของ Package Order
-  userPackageId     BigInt?
-  creditsUsed       Int?        // ใช้ออเดอร์นี้ไปกี่เครดิต (จำนวนชิ้น)
+  id            BigInt     @id @default(autoincrement())
+  customerId    String
+  employeeId    String?
 
-  // ส่วนของ Storefront Order
-  totalAmount       Decimal?    @db.Decimal(10, 2)
-  
-  basketQrId        String?     @unique // QR Code ตะกร้า
-  notes             String?
-  deliveryAddressId BigInt?
+  orderType     OrderType
+  currentStatus OrderStatus @default(PENDING_CHECK)
+
+  // PACKAGE logic
+  userPackageId BigInt?
+  creditsUsed   Int?
+
+  // STOREFRONT logic
+  totalAmount   Decimal?   @db.Decimal(10, 2)
+
+  basketId      BigInt
+  notes         String?
+
+  deliveryAddressId       BigInt?
+  deliveryAddressSnapshot Json?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  // --- Relations ---
-  customer        User                 @relation("CustomerOrders", fields: [customerId], references: [id])
-  employee        User?                @relation("EmployeeOrders", fields: [employeeId], references: [id])
-  userPackage     UserPackage?         @relation(fields: [userPackageId], references: [id])
-  deliveryAddress UserAddress?         @relation(fields: [deliveryAddressId], references: [id])
-  
-  orderItems      OrderItem[]
-  statusHistory   OrderStatusHistory[]
-  images          Image[]              // รูปภาพรวมของออเดอร์ (เช่น รูปตะกร้า)
+  // Relations
+  customer User @relation("OrderCustomer", fields: [customerId], references: [id], onDelete: Restrict)
+  employee User? @relation("OrderEmployee", fields: [employeeId], references: [id], onDelete: SetNull)
 
-  @@index([deletedAt])
-  @@index([customerId, currentStatus])
+  userPackage UserPackage? @relation(fields: [userPackageId], references: [id], onDelete: SetNull)
+  basket      Basket       @relation(fields: [basketId], references: [id], onDelete: Restrict)
+
+  deliveryAddress UserAddress? @relation(fields: [deliveryAddressId], references: [id], onDelete: SetNull)
+
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
+  images        Image[]
+  creditLedgers PackageCreditLedger[]
+
+  @@index([customerId, createdAt])
+  @@index([employeeId, currentStatus, createdAt])
+  @@index([basketId])
+  @@map("orders")
 }
 
 model OrderItem {
   id                BigInt  @id @default(autoincrement())
   orderId           BigInt
   storefrontPriceId BigInt
-  quantity          Int
-  unitPrice         Decimal @db.Decimal(10, 2) // ราคา ณ วันที่สั่ง (Snapshot)
-  totalPrice        Decimal @db.Decimal(10, 2)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+  notes     String?
 
-  // --- Relations ---
+  createdAt DateTime @default(now())
+
   order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
-  images          Image[]         // รูปเจาะจงรายชิ้น (เช่น เสื้อตัวนี้ขาด)
+  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id], onDelete: Restrict)
+  images          Image[]
+
+  @@index([orderId])
+  @@index([storefrontPriceId])
+  @@map("order_items")
 }
 
 model OrderStatusHistory {
   id         BigInt      @id @default(autoincrement())
   orderId    BigInt
   status     OrderStatus
-  employeeId String?     // ใครเป็นคนเปลี่ยนสถานะ
-  customerId String?     // หรือลูกค้าเป็นคนเปลี่ยน (เช่น กดยกเลิก/ยืนยัน)
+  employeeId String?
+  customerId String?
   notes      String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime @default(now())
 
-  // --- Relations ---
   order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  employee User? @relation("EmployeeHistory", fields: [employeeId], references: [id])
-  customer User? @relation("CustomerStatusHistory", fields: [customerId], references: [id])
+  employee User? @relation("StatusEmployee", fields: [employeeId], references: [id], onDelete: SetNull)
+  customer User? @relation("StatusCustomer", fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_histories")
 }
 
-// ------------------------------------------
-// 7. ASSETS & ADDRESS (ข้อมูลประกอบ)
-// ------------------------------------------
+//// -------------------------------------- ////
+////          ADDRESS / DELIVERY            ////
+//// -------------------------------------- ////
 
 model UserAddress {
-  id           BigInt    @id @default(autoincrement())
+  id           BigInt @id @default(autoincrement())
   userId       String
+
   addressLine1 String
-  city         String?
+  addressLine2 String?
+  subdistrict  String?
+  district     String?
+  province     String?
   postalCode   String?
-  isDefault    Boolean   @default(false)
-  
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
 
-  // --- Relations ---
-  user   User    @relation(fields: [userId], references: [id])
-  orders Order[]
-}
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
 
-model Image {
-  id          Int     @id @default(autoincrement())
-  asset_id    String
-  public_id   String
-  url         String
-  secure_url  String
-  description String?
+  isDefault Boolean @default(false)
 
-  // เชื่อมได้ทั้ง Order (รูปภาพรวม) หรือ OrderItem (รูปภาพรายชิ้น)
-  orderId     BigInt? 
-  orderItemId BigInt?
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  // --- Relations ---
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@index([userId, isDefault])
+  @@map("user_addresses")
+}
+
+//// -------------------------------------- ////
+////              IMAGES / ASSETS           ////
+//// -------------------------------------- ////
+
+model Image {
+  id          Int      @id @default(autoincrement())
+  url         String
+  description String?
+
+  orderId     BigInt?
+  orderItemId BigInt?
+
+  createdAt DateTime @default(now())
+
   order     Order?     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([orderItemId])
+  @@map("images")
 }
