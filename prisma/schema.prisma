@@ -1,12 +1,10 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  // เปิดใช้ relationJoins เพื่อประสิทธิภาพที่ดีขึ้นในการ query
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -14,61 +12,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ------------------------------------------
+// 1. ENUMS (สถานะต่างๆ)
+// ------------------------------------------
+
 enum Role {
-  User
-  EMPLOYEE
-  ADMIN
+  User // ลูกค้าทั่วไป (ใช้ User ตาม Better Auth default)
+  EMPLOYEE // พนักงานร้าน
+  ADMIN // เจ้าของร้าน/ผู้ดูแล
 }
 
 enum OrderType {
-  PACKAGE //ออเดอร์แบบรายเดือน (หักเครดิต)
-  STOREFRONT //ออเดอร์แบบหน้าร้าน (คิดเงินตามชิ้น)
+  PACKAGE // ออเดอร์แบบรายเดือน (หักเครดิต)
+  STOREFRONT // ออเดอร์แบบหน้าร้าน (คิดเงินตามชิ้น)
 }
 
 enum OrderStatus {
-  PENDING_CHECK //รอตรวจสอบผ้า
-  WASHING //กำลังซัก
-  DRYING //กำลังตาก/อบ
-  IRONING //กำลังรีด
-  READY_FOR_PICKUP //แพ็คพร้อมส่ง
-  COMPLETED //รับผ้าแล้ว
-  CANCELLED //ยกเลิก
+  PENDING_CHECK // รอตรวจสอบผ้า/ยืนยัน
+  WASHING // กำลังซัก
+  DRYING // กำลังตาก/อบ
+  IRONING // กำลังรีด
+  READY_FOR_PICKUP // แพ็คพร้อมส่ง/รอรับ
+  COMPLETED // ลูกค้ารับผ้าแล้ว (จบงาน)
+  CANCELLED // ยกเลิก
 }
 
 enum PackageStatus {
-  PENDING
-  ACTIVE
-  EXPIRED
+  PENDING // รออนุมัติ (เพิ่งสมัคร/ส่งสลิป)
+  ACTIVE // ใช้งานได้
+  EXPIRED // หมดอายุ/เครดิตหมด
 }
 
-// เก็บข้อมูลบัญชีผู้ใช้และความสัมพันธ์กับคำสั่งซื้อ/แพ็กเกจ
-model User {
-  id                 String               @id
-  name               String
-  email              String
-  emailVerified      Boolean              @default(false)
-  image              String?
-  role               Role                 @default(User)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
-  sessions           Session[]
-  accounts           Account[]
-  UserPackage           UserPackage[]
-  CustomerOrders        Order[]              @relation("CustomerOrders")
-  EmployeeOrders        Order[]              @relation("EmployeeOrders") // รายการออเดอร์ที่พนักงานรับผิดชอบ
-  CustomerStatusHistory OrderStatusHistory[] @relation("CustomerStatusHistory")
-  EmployeeHistory       OrderStatusHistory[] @relation("EmployeeHistory") // ประวัติการอัพเดตสถานะที่พนักงานเป็นผู้สแกน
-  UserAddress        UserAddress[]
+enum PaymentStatus {
+  PENDING // รอตรวจสอบสลิป
+  VERIFIED // ตรวจสอบแล้ว (ผ่าน)
+  FAILED // สลิปไม่ผ่าน/ปฏิเสธ
+}
 
-  @@unique([email])
+// ------------------------------------------
+// 2. AUTHENTICATION & USER (Better Auth)
+// ------------------------------------------
+
+model User {
+  id            String    @id @default(cuid()) // Better Auth ใช้ String ID
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(User)
+  
+  // เพิ่มเติมสำหรับ Business Logic
+  phoneNumber   String?
+  lineUserId    String?   @unique // สำหรับส่ง Push Notification
+  points        Int       @default(0) // แต้มสะสม
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Relations ---
+  sessions              Session[]
+  accounts              Account[]
+  userPackages          UserPackage[]
+  paymentTransactions   PaymentTransaction[] // ประวัติการโอนเงิน
+  customerOrders        Order[]              @relation("CustomerOrders")
+  employeeOrders        Order[]              @relation("EmployeeOrders")
+  customerStatusHistory OrderStatusHistory[] @relation("CustomerStatusHistory")
+  employeeHistory       OrderStatusHistory[] @relation("EmployeeHistory")
+  userAddresses         UserAddress[]
+
   @@map("user")
 }
 
-// บันทึกเซสชันการล็อกอินของผู้ใช้ รวม IP และ user agent
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -76,11 +94,9 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
-// เก็บข้อมูลบัญชีภายนอกหรือข้อมูลล็อกอินที่เชื่อมกับผู้ใช้
 model Account {
   id                    String    @id
   accountId             String
@@ -100,155 +116,232 @@ model Account {
   @@map("account")
 }
 
-// ใช้สำหรับจัดการโค้ดยืนยันตัวตน (เช่น OTP หรือ magic link)
 model Verification {
   id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  updatedAt  DateTime @updatedAt
 
   @@map("verification")
 }
 
-// รายการแพ็กเกจซักผ้าแบบเหมาจ่าย
+// ------------------------------------------
+// 3. PACKAGE & SUBSCRIPTION (ระบบสมาชิก)
+// ------------------------------------------
+
 model Package {
-  id               Int       @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   name             String
-  price            Decimal   @db.Decimal(10, 2)
-  laundryCredits   Int  //จำนวนผ้าแพ็คเกจต่อเดือน
-  durationDays     Int  //ระยะเวลา
-  includesDelivery Boolean   @default(false) //มีบริการรับ-ส่งถึงบ้านไหม
-  isActive         Boolean   @default(true)
-  deletedAt        DateTime?
+  price            Decimal @db.Decimal(10, 2)
+  laundryCredits   Int // เครดิตสำหรับซักทั่วไป (ชิ้น)
+  durationDays     Int // อายุใช้งาน (วัน)
+  includesDelivery Boolean @default(false)
+  isActive         Boolean @default(true) // เปิดขายหรือไม่
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft Delete
 
   // --- Relations ---
   userPackages UserPackage[]
+  inclusions   PackageInclusion[] // ของแถมในแพ็คเกจ
 }
 
-// ความสัมพันธ์ผู้ใช้ที่ซื้อแพ็กเกจ รวมสถานะและจำนวนเครดิต
+// ตารางเก็บ "ของแถม" ในแพ็คเกจ (เช่น แถมซักผ้านวมฟรี 1 ผืน)
+model PackageInclusion {
+  id                Int    @id @default(autoincrement())
+  packageId         Int
+  storefrontPriceId BigInt // อ้างอิง ID ของราคาหน้าร้าน (เช่น ID ของผ้านวม)
+  quantityLimit     Int // จำนวนที่แถม
+
+  // --- Relations ---
+  package         Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
+}
+
 model UserPackage {
   id               BigInt        @id @default(autoincrement())
   userId           String
   packageId        Int
   status           PackageStatus @default(PENDING)
-  startDate        DateTime?
-  endDate          DateTime?
-  remainingCredits Int     // เครดิตซักผ้าที่เหลืออยู่สำหรับแพ็กเกจนี้
-  deletedAt        DateTime?
+  startDate        DateTime? // เริ่มนับเมื่อ status = ACTIVE
+  endDate          DateTime? // หมดอายุเมื่อไร
+  remainingCredits Int // เครดิตทั่วไปคงเหลือ
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // --- Relations ---
-  user    User    @relation(fields: [userId], references: [id])
-  package Package @relation(fields: [packageId], references: [id])
-  orders  Order[] // แพ็คเกจนี้ถูกใช้ในออเดอร์ไหนบ้าง
+  user         User               @relation(fields: [userId], references: [id])
+  package      Package            @relation(fields: [packageId], references: [id])
+  orders       Order[] // ใช้กับออเดอร์ไหนบ้าง
+  transactions PaymentTransaction[] // สลิปโอนเงินรายการไหนที่ซื้อแพ็คเกจนี้
+  usageHistory UserPackageUsage[] // ประวัติการใช้ของแถม
 
   @@index([userId, status])
 }
 
-// --- Storefront Models ---
+// ตารางบันทึกการใช้ "ของแถม" ของลูกค้า (Cross-selling usage)
+model UserPackageUsage {
+  id                BigInt @id @default(autoincrement())
+  userPackageId     BigInt
+  storefrontPriceId BigInt
+  quantityUsed      Int    @default(0) // ใช้ไปแล้วกี่สิทธิ์
+  quantityLimit     Int // สิทธิ์ทั้งหมดที่มี (Copy มาจาก Inclusion)
 
-// บริการที่มีให้เลือกที่หน้าร้าน (เช่น ซักแห้ง รีด)
+  // --- Relations ---
+  userPackage     UserPackage     @relation(fields: [userPackageId], references: [id])
+  storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
+}
+
+// ------------------------------------------
+// 4. FINANCIAL (การเงิน) *สำคัญมากที่เพิ่มมา*
+// ------------------------------------------
+
+model PaymentTransaction {
+  id            BigInt        @id @default(autoincrement())
+  userId        String // คนจ่าย
+  userPackageId BigInt // จ่ายค่าแพ็คเกจไหน
+  amount        Decimal       @db.Decimal(10, 2)
+  slipUrl       String // รูปสลิป (Cloudinary)
+  status        PaymentStatus @default(PENDING)
+  verifiedById  String? // Admin คนไหนเป็นคนกดยืนยัน
+
+  createdAt DateTime @default(now())
+  verifiedAt DateTime?
+
+  // --- Relations ---
+  user        User        @relation(fields: [userId], references: [id])
+  userPackage UserPackage @relation(fields: [userPackageId], references: [id])
+}
+
+// ------------------------------------------
+// 5. STOREFRONT (หน้าร้าน)
+// ------------------------------------------
+
 model StorefrontService {
   id        Int       @id @default(autoincrement())
-  name      String    @unique
+  name      String    @unique // เช่น ซักอบรีด, ซักแห้ง
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  // --- Relations ---
   prices StorefrontPrice[]
 }
 
-// ประเภทผ้าหรือประเภทสินค้าในหน้าร้าน (เช่น เสื้อเชิ้ต ผ้าปูที่นอน)
 model StorefrontItem {
   id        Int       @id @default(autoincrement())
-  name      String    @unique
+  name      String    @unique // เช่น เสื้อเชิ้ต, ผ้านวม
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  // --- Relations ---
   prices StorefrontPrice[]
 }
 
-// ตารางกำหนดราคา โดยจับคู่บริการกับประเภทผ้า
 model StorefrontPrice {
-  id        BigInt    @id @default(autoincrement())
+  id        BigInt  @id @default(autoincrement())
   serviceId Int
   itemId    Int
-  price     Decimal   @db.Decimal(10, 2)
+  price     Decimal @db.Decimal(10, 2) // ราคาปัจจุบัน
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   // --- Relations ---
-  service    StorefrontService @relation(fields: [serviceId], references: [id])
-  item       StorefrontItem    @relation(fields: [itemId], references: [id])
-  orderItems OrderItem[]
+  service StorefrontService @relation(fields: [serviceId], references: [id])
+  item    StorefrontItem    @relation(fields: [itemId], references: [id])
+  
+  // Relations to usage
+  orderItems        OrderItem[]
+  packageInclusions PackageInclusion[]
+  userUsage         UserPackageUsage[]
 
-  // ราคาของ (บริการ+ประเภทผ้า) ต้องไม่ซ้ำกัน (ถ้ายังไม่ถูกลบ)
   @@unique([serviceId, itemId, deletedAt])
 }
 
-// --- Order Models ---
+// ------------------------------------------
+// 6. ORDER (ระบบจัดการงาน)
+// ------------------------------------------
 
-// ออเดอร์ซักผ้าของลูกค้า รองรับทั้งแพ็กเกจและหน้าร้าน
 model Order {
   id                BigInt      @id @default(autoincrement())
-  customerId        String // ลูกค้า
-  employeeId        String? // พนักงานที่รับผิดชอบ
-  orderType         OrderType //ชนิด order หน้าร้านหรือแพ็คเกจรายเดือน
+  customerId        String
+  employeeId        String?
+  orderType         OrderType
   currentStatus     OrderStatus @default(PENDING_CHECK)
-  creditsUsed       Int?        //ถ้าเป็น type=PACKAGE ใช้ออเดอร์นี้ไปกี่เครดิต (เช่น 50 ชิ้น)
-  userPackageId     BigInt? // ถ้าเป็น type=PACKAGE ดึง user คนนั้นมาเพื่อคำนวน Credits
-  totalAmount       Decimal?    @db.Decimal(10, 2) // ถ้าเป็น type=STOREFRONT
-  basketQrId        String?     @unique
+  
+  // ส่วนของ Package Order
+  userPackageId     BigInt?
+  creditsUsed       Int?        // ใช้ออเดอร์นี้ไปกี่เครดิต (จำนวนชิ้น)
+
+  // ส่วนของ Storefront Order
+  totalAmount       Decimal?    @db.Decimal(10, 2)
+  
+  basketQrId        String?     @unique // QR Code ตะกร้า
   notes             String?
   deliveryAddressId BigInt?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  deletedAt         DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // --- Relations ---
   customer        User                 @relation("CustomerOrders", fields: [customerId], references: [id])
   employee        User?                @relation("EmployeeOrders", fields: [employeeId], references: [id])
   userPackage     UserPackage?         @relation(fields: [userPackageId], references: [id])
   deliveryAddress UserAddress?         @relation(fields: [deliveryAddressId], references: [id])
+  
   orderItems      OrderItem[]
-  statusHistory   OrderStatusHistory[] // ไล่ประวัติสถานะ ที่พนักงานหรือลูกค้าทำกิจกรรมกับออเดอร์
+  statusHistory   OrderStatusHistory[]
+  images          Image[]              // รูปภาพรวมของออเดอร์ (เช่น รูปตะกร้า)
 
-  // Index สำหรับ Soft Delete
   @@index([deletedAt])
   @@index([customerId, currentStatus])
 }
 
-// รายการย่อยภายในออเดอร์หน้าร้าน (รายการต่อชิ้น)
 model OrderItem {
   id                BigInt  @id @default(autoincrement())
   orderId           BigInt
-  storefrontPriceId BigInt // ระบุว่าคือ (บริการ+ประเภทผ้า) ราคาเท่าไหร่
+  storefrontPriceId BigInt
   quantity          Int
-  unitPrice         Decimal @db.Decimal(10, 2) // ราคาต่อหน่วย (ณ เวลาที่สั่ง)
-  totalPrice        Decimal @db.Decimal(10, 2) // quantity * unitPrice
+  unitPrice         Decimal @db.Decimal(10, 2) // ราคา ณ วันที่สั่ง (Snapshot)
+  totalPrice        Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // --- Relations ---
   order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   storefrontPrice StorefrontPrice @relation(fields: [storefrontPriceId], references: [id])
-  images          Image[]         // รูปถ่ายผ้าในรายการนี้เพื่อยืนยันสภาพก่อนซัก
+  images          Image[]         // รูปเจาะจงรายชิ้น (เช่น เสื้อตัวนี้ขาด)
 }
 
-// เก็บประวัติการเปลี่ยนสถานะออเดอร์พร้อมข้อมูลผู้บันทึก
 model OrderStatusHistory {
   id         BigInt      @id @default(autoincrement())
   orderId    BigInt
   status     OrderStatus
-  employeeId String? // พนักงานที่สแกน
-  customerId String?
+  employeeId String?     // ใครเป็นคนเปลี่ยนสถานะ
+  customerId String?     // หรือลูกค้าเป็นคนเปลี่ยน (เช่น กดยกเลิก/ยืนยัน)
   notes      String?
   createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   // --- Relations ---
-  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  employee User?   @relation("EmployeeHistory", fields: [employeeId], references: [id])
-  customer User?   @relation("CustomerStatusHistory", fields: [customerId], references: [id])
+  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  employee User? @relation("EmployeeHistory", fields: [employeeId], references: [id])
+  customer User? @relation("CustomerStatusHistory", fields: [customerId], references: [id])
 }
 
-// ที่อยู่จัดส่งของผู้ใช้ เลือกตั้งค่าเป็นค่าเริ่มต้นได้
+// ------------------------------------------
+// 7. ASSETS & ADDRESS (ข้อมูลประกอบ)
+// ------------------------------------------
+
 model UserAddress {
   id           BigInt    @id @default(autoincrement())
   userId       String
@@ -256,27 +349,33 @@ model UserAddress {
   city         String?
   postalCode   String?
   isDefault    Boolean   @default(false)
-  deletedAt    DateTime?
-
-  // --- Relations ---
-  user   User    @relation(fields: [userId], references: [id])
-  orders Order[] // ที่อยู่นี้ถูกใช้ในออเดอร์ไหนบ้าง
-}
-
-// รูปถ่ายสภาพผ้ารายชิ้น ใช้เป็นหลักฐานก่อนและหลังการซัก
-model Image {
-  id           Int       @id @default(autoincrement())
-  asset_id     String
-  public_id    String
-  url          String
-  secure_url   String
-  description  String?   // บันทึกว่าเกิดความเสียหายแบบใด หรือหมายเหตุอื่น
-  orderItemId  BigInt?
+  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   // --- Relations ---
-  orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
 }
 
+model Image {
+  id          Int     @id @default(autoincrement())
+  asset_id    String
+  public_id   String
+  url         String
+  secure_url  String
+  description String?
+
+  // เชื่อมได้ทั้ง Order (รูปภาพรวม) หรือ OrderItem (รูปภาพรายชิ้น)
+  orderId     BigInt? 
+  orderItemId BigInt?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // --- Relations ---
+  order     Order?     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+}

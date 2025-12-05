@@ -1,0 +1,58 @@
+{
+    "orders": [
+        {
+            "id": "",
+            "customerId": {
+                "id": "",
+                "name": "",
+                "email": "",
+                "emailVerified": "",
+                "image": "",
+                "createdAt": "",
+                "updatedAt": ""
+            },
+            "employeeId":{
+                "id": "",
+                "name": "",
+                "email": "",
+                "emailVerified": "",
+                "image": "",
+                "createdAt": "",
+                "updatedAt": ""
+            },
+            "ordersType": "",
+            "currentStatus": "",
+            "creditsUsed": "",
+            "userPackageId": {
+                "id": "",
+                "userId": {
+                    "id": "",
+                    "name": "",
+                    "email": "",
+                    "emailVerified": "",
+                    "image": "",
+                    "createdAt": "",
+                    "updatedAt": ""
+                },
+                "packageId": {
+                    "id": "",
+                    "name": "",
+                    "price": "",
+                    "laundryCredits": "",
+                    "includesDelivery": "",
+                    "createdAt": "",
+                    "updatedAt": ""
+                },
+                "createdAt": "",
+                "updatedAt": ""
+            },
+            "totalAmount": "",
+            "basketQrId": "",
+            "notes": "",
+            "deliveryAddressId": "",
+            "createdAt": "",
+            "updatedAt": "",
+            "deletedAt": ""
+        }
+    ]
+}

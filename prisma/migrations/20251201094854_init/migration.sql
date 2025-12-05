@@ -10,13 +10,8 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING_CHECK', 'WASHING', 'DRYING', 'IRONIN
 -- CreateEnum
 CREATE TYPE "PackageStatus" AS ENUM ('PENDING', 'ACTIVE', 'EXPIRED');
 
--- CreateTable
-CREATE TABLE "init" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "init_pkey" PRIMARY KEY ("id")
-);
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'VERIFIED', 'FAILED');
 
 -- CreateTable
 CREATE TABLE "user" (
@@ -25,9 +20,12 @@ CREATE TABLE "user" (
     "email" TEXT NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
-    "role" "Role" NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'User',
+    "phoneNumber" TEXT,
+    "lineUserId" TEXT,
+    "points" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -72,7 +70,7 @@ CREATE TABLE "verification" (
     "value" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
 );
@@ -86,9 +84,21 @@ CREATE TABLE "Package" (
     "durationDays" INTEGER NOT NULL,
     "includesDelivery" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Package_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PackageInclusion" (
+    "id" SERIAL NOT NULL,
+    "packageId" INTEGER NOT NULL,
+    "storefrontPriceId" BIGINT NOT NULL,
+    "quantityLimit" INTEGER NOT NULL,
+
+    CONSTRAINT "PackageInclusion_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -100,15 +110,45 @@ CREATE TABLE "UserPackage" (
     "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),
     "remainingCredits" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "UserPackage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "UserPackageUsage" (
+    "id" BIGSERIAL NOT NULL,
+    "userPackageId" BIGINT NOT NULL,
+    "storefrontPriceId" BIGINT NOT NULL,
+    "quantityUsed" INTEGER NOT NULL DEFAULT 0,
+    "quantityLimit" INTEGER NOT NULL,
+
+    CONSTRAINT "UserPackageUsage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PaymentTransaction" (
+    "id" BIGSERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "userPackageId" BIGINT NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL,
+    "slipUrl" TEXT NOT NULL,
+    "status" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
+    "verifiedById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "verifiedAt" TIMESTAMP(3),
+
+    CONSTRAINT "PaymentTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "StorefrontService" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "StorefrontService_pkey" PRIMARY KEY ("id")
@@ -118,6 +158,8 @@ CREATE TABLE "StorefrontService" (
 CREATE TABLE "StorefrontItem" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "StorefrontItem_pkey" PRIMARY KEY ("id")
@@ -129,6 +171,8 @@ CREATE TABLE "StorefrontPrice" (
     "serviceId" INTEGER NOT NULL,
     "itemId" INTEGER NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "StorefrontPrice_pkey" PRIMARY KEY ("id")
@@ -141,8 +185,8 @@ CREATE TABLE "Order" (
     "employeeId" TEXT,
     "orderType" "OrderType" NOT NULL,
     "currentStatus" "OrderStatus" NOT NULL DEFAULT 'PENDING_CHECK',
-    "creditsUsed" INTEGER,
     "userPackageId" BIGINT,
+    "creditsUsed" INTEGER,
     "totalAmount" DECIMAL(10,2),
     "basketQrId" TEXT,
     "notes" TEXT,
@@ -162,6 +206,9 @@ CREATE TABLE "OrderItem" (
     "quantity" INTEGER NOT NULL,
     "unitPrice" DECIMAL(10,2) NOT NULL,
     "totalPrice" DECIMAL(10,2) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
@@ -175,6 +222,7 @@ CREATE TABLE "OrderStatusHistory" (
     "customerId" TEXT,
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "OrderStatusHistory_pkey" PRIMARY KEY ("id")
 );
@@ -187,6 +235,8 @@ CREATE TABLE "UserAddress" (
     "city" TEXT,
     "postalCode" TEXT,
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "UserAddress_pkey" PRIMARY KEY ("id")
@@ -200,6 +250,7 @@ CREATE TABLE "Image" (
     "url" TEXT NOT NULL,
     "secure_url" TEXT NOT NULL,
     "description" TEXT,
+    "orderId" BIGINT,
     "orderItemId" BIGINT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -210,6 +261,9 @@ CREATE TABLE "Image" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_lineUserId_key" ON "user"("lineUserId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
@@ -242,10 +296,28 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PackageInclusion" ADD CONSTRAINT "PackageInclusion_packageId_fkey" FOREIGN KEY ("packageId") REFERENCES "Package"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PackageInclusion" ADD CONSTRAINT "PackageInclusion_storefrontPriceId_fkey" FOREIGN KEY ("storefrontPriceId") REFERENCES "StorefrontPrice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserPackage" ADD CONSTRAINT "UserPackage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserPackage" ADD CONSTRAINT "UserPackage_packageId_fkey" FOREIGN KEY ("packageId") REFERENCES "Package"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserPackageUsage" ADD CONSTRAINT "UserPackageUsage_userPackageId_fkey" FOREIGN KEY ("userPackageId") REFERENCES "UserPackage"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserPackageUsage" ADD CONSTRAINT "UserPackageUsage_storefrontPriceId_fkey" FOREIGN KEY ("storefrontPriceId") REFERENCES "StorefrontPrice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_userPackageId_fkey" FOREIGN KEY ("userPackageId") REFERENCES "UserPackage"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StorefrontPrice" ADD CONSTRAINT "StorefrontPrice_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "StorefrontService"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -282,6 +354,9 @@ ALTER TABLE "OrderStatusHistory" ADD CONSTRAINT "OrderStatusHistory_customerId_f
 
 -- AddForeignKey
 ALTER TABLE "UserAddress" ADD CONSTRAINT "UserAddress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Image" ADD CONSTRAINT "Image_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Image" ADD CONSTRAINT "Image_orderItemId_fkey" FOREIGN KEY ("orderItemId") REFERENCES "OrderItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -10,6 +10,9 @@ export interface User {
   email: string
   avatar?: AvatarProps
   role: Role
+  phoneNumber?: string
+  lineUserId?: string
+  points?: number
   package?: Package
 }
 

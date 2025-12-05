@@ -3,6 +3,9 @@ import type { Role } from "@/generated/prisma/client"
 
 export type AuthUser = User & {
     role?: Role | null
+    phoneNumber?: string | null
+    lineUserId?: string | null
+    points?: number | null
 }
 
 type AuthSignInResult = (Record<string, unknown> & { user: AuthUser })

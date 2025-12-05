@@ -1,45 +1,111 @@
 <script setup lang="ts">
 const state = reactive<{ [key: string]: boolean }>({
-  email: true,
-  desktop: false,
-  product_updates: true,
-  weekly_digest: false,
-  important_updates: true
+  // ช่องทางการแจ้งเตือน
+  line: true,
+  
+  // การแจ้งเตือนออเดอร์
+  new_order: true,
+  order_status_change: true,
+  order_ready: true,
+  order_delivered: true,
+  
+  // การแจ้งเตือนการชำระเงิน
+  payment_received: true,
+  payment_pending: true,
+  
+  // การแจ้งเตือนลูกค้า
+  customer_pickup_reminder: true,
+  customer_late_pickup: true,
+  
+  // การแจ้งเตือนระบบ
+  late_order_alert: true,
+  new_review: true,
+  low_stock_alert: true
 })
 
 const sections = [{
-  title: 'Notification channels',
-  description: 'Where can we notify you?',
+  title: 'ช่องทางการแจ้งเตือน',
+  description: 'เลือกช่องทางที่ต้องการรับการแจ้งเตือน',
   fields: [{
-    name: 'email',
-    label: 'Email',
-    description: 'Receive a daily email digest.'
-  }, {
-    name: 'desktop',
-    label: 'Desktop',
-    description: 'Receive desktop notifications.'
+    name: 'line',
+    label: 'Line Notify',
+    description: 'รับการแจ้งเตือนผ่าน Line'
   }]
 }, {
-  title: 'Account updates',
-  description: 'Receive updates about Nuxt UI.',
+  title: 'การแจ้งเตือนออเดอร์',
+  description: 'การแจ้งเตือนเกี่ยวกับสถานะออเดอร์',
   fields: [{
-    name: 'weekly_digest',
-    label: 'Weekly digest',
-    description: 'Receive a weekly digest of news.'
+    name: 'new_order',
+    label: 'ออเดอร์ใหม่',
+    description: 'แจ้งเตือนเมื่อมีออเดอร์ใหม่เข้ามา'
   }, {
-    name: 'product_updates',
-    label: 'Product updates',
-    description: 'Receive a monthly email with all new features and updates.'
+    name: 'order_status_change',
+    label: 'เปลี่ยนสถานะออเดอร์',
+    description: 'แจ้งเตือนเมื่อสถานะออเดอร์เปลี่ยนแปลง'
   }, {
-    name: 'important_updates',
-    label: 'Important updates',
-    description: 'Receive emails about important updates like security fixes, maintenance, etc.'
+    name: 'order_ready',
+    label: 'ออเดอร์พร้อมส่ง',
+    description: 'แจ้งเตือนเมื่อออเดอร์พร้อมส่งมอบ'
+  }, {
+    name: 'order_delivered',
+    label: 'ส่งออเดอร์แล้ว',
+    description: 'แจ้งเตือนเมื่อส่งมอบออเดอร์เรียบร้อย'
+  }]
+}, {
+  title: 'การแจ้งเตือนการชำระเงิน',
+  description: 'การแจ้งเตือนเกี่ยวกับการชำระเงิน',
+  fields: [{
+    name: 'payment_received',
+    label: 'รับชำระเงินแล้ว',
+    description: 'แจ้งเตือนเมื่อได้รับการชำระเงิน'
+  }, {
+    name: 'payment_pending',
+    label: 'รอชำระเงิน',
+    description: 'แจ้งเตือนเมื่อมีออเดอร์ที่รอชำระเงิน'
+  }]
+}, {
+  title: 'การแจ้งเตือนลูกค้า',
+  description: 'การแจ้งเตือนเกี่ยวกับการรับของของลูกค้า',
+  fields: [{
+    name: 'customer_pickup_reminder',
+    label: 'เตือนลูกค้ามารับของ',
+    description: 'ส่งการแจ้งเตือนให้ลูกค้าเมื่อถึงเวลารับของ'
+  }, {
+    name: 'customer_late_pickup',
+    label: 'ลูกค้ารับของล่าช้า',
+    description: 'แจ้งเตือนเมื่อลูกค้ารับของเกินกำหนด'
+  }]
+}, {
+  title: 'การแจ้งเตือนระบบ',
+  description: 'การแจ้งเตือนเกี่ยวกับการทำงานของระบบ',
+  fields: [{
+    name: 'late_order_alert',
+    label: 'ออเดอร์ล่าช้า',
+    description: 'แจ้งเตือนเมื่อออเดอร์ล่าช้ากว่ากำหนด'
+  }, {
+    name: 'new_review',
+    label: 'รีวิวใหม่',
+    description: 'แจ้งเตือนเมื่อมีรีวิวจากลูกค้า'
+  }, {
+    name: 'low_stock_alert',
+    label: 'สต็อกต่ำ',
+    description: 'แจ้งเตือนเมื่อวัสดุสิ้นเปลืองใกล้หมด'
   }]
 }]
 
-async function onChange() {
-  // Do something with data
-  console.log(state)
+const toast = useToast()
+
+async function onChange(fieldName: string, value: boolean) {
+  // บันทึกการตั้งค่า
+  console.log(`${fieldName}: ${value}`)
+  
+  // แสดง toast notification
+  toast.add({
+    title: 'บันทึกแล้ว',
+    description: 'บันทึกการตั้งค่าการแจ้งเตือนเรียบร้อย',
+    icon: 'i-lucide-check',
+    color: 'success'
+  })
 }
 </script>
 
@@ -64,7 +130,7 @@ async function onChange() {
         >
           <USwitch
             v-model="state[field.name]"
-            @update:model-value="onChange"
+            @update:model-value="(value) => onChange(field.name, value)"
           />
         </UFormField>
       </UPageCard>

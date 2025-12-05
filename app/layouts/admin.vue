@@ -55,7 +55,7 @@ const links = [
           }
         },
         {
-          label: 'สมาชิก',
+          label: 'พนักงาน',
           to: '/admin/settings/members',
           onSelect: () => {
             open.value = false

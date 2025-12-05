@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
+const route = useRoute()
+
+// Dynamic max-width based on route
+const maxWidthClass = computed(() => {
+  return route.path === '/admin/settings/packages' 
+    ? 'lg:max-w-7xl' 
+    : 'lg:max-w-3xl'
+})
+
 const links = [
   [
     {
@@ -44,6 +53,7 @@ const links = [
     }
   ]
 ] satisfies NavigationMenuItem[][]
+
 </script>
 
 <template>
@@ -62,7 +72,7 @@ const links = [
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-2xl mx-auto">
+      <div :class="['flex flex-col gap-4 sm:gap-6 min-w-2xl lg:gap-12 w-full mx-auto', maxWidthClass]">
         <NuxtPage />
       </div>
     </template>
