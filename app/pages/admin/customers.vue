@@ -16,12 +16,7 @@ const UCheckbox = resolveComponent('UCheckbox')
 const toast = useToast()
 const table = useTemplateRef('table')
 
-const columnFilters = ref([{
-  id: 'email',
-  value: ''
-}])
-const columnVisibility = ref({})
-const rowSelection = ref({})
+
 
 const { data, status } = await useFetch<User[]>('/api/customers')
 
@@ -33,7 +28,11 @@ function handleUsersRemoved(removedUsers: User[]) {
   // console.log(removedUsers)
   // Reset row selection
   data.value = data.value?.filter(user => !removedUsers.some(removedUser => removedUser.id === user.id))
-  rowSelection.value = {}
+  
+  if (table.value?.table?.tableApi) {
+    table.value.table.tableApi.resetRowSelection()
+  }
+  
   // Show success toast
   toast.add({
     title: 'ลบสำเร็จ',
@@ -216,10 +215,15 @@ const columns: TableColumn<User>[] = [
 const packageFilter = ref('all')
 const roleFilter = ref('all')
 
-watch(() => packageFilter.value, (newVal) => {
-  if (!table?.value?.tableApi) return
+// Watchers for external filters are temporarily disabled or need to be adjusted to access DataTable's exposed table instance.
+// Since DataTable exposes 'table', we can access 'table.value.tableApi' if 'table' ref is typed correctly.
+// However, the cleanest way is often to bind these filters directly to the table state or use the new component's slots effectively.
+// For now, let's keep the refs but we might need to cast 'table' to any or define the component type to access tableApi.
 
-  const packageColumn = table.value.tableApi.getColumn('package')
+watch(() => packageFilter.value, (newVal) => {
+  if (!table.value?.table?.tableApi) return
+
+  const packageColumn = table.value.table.tableApi.getColumn('package')
   if (!packageColumn) return
 
   if (newVal === 'all') {
@@ -230,9 +234,9 @@ watch(() => packageFilter.value, (newVal) => {
 })
 
 watch(() => roleFilter.value, (newVal) => {
-  if (!table?.value?.tableApi) return
+  if (!table.value?.table?.tableApi) return
 
-  const roleColumn = table.value.tableApi.getColumn('role')
+  const roleColumn = table.value.table.tableApi.getColumn('role')
   if (!roleColumn) return
 
   if (newVal === 'all') {
@@ -242,10 +246,7 @@ watch(() => roleFilter.value, (newVal) => {
   }
 })
 
-const pagination = ref({
-  pageIndex: 0,
-  pageSize: 10
-})
+
 </script>
 
 <template>
@@ -265,16 +266,23 @@ const pagination = ref({
     </template>
 
     <template #body>
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <UInput
-          :model-value="(table?.tableApi?.getColumn('email')?.getFilterValue() as string)"
-          class="max-w-sm"
-          icon="i-lucide-search"
-          placeholder="ค้นหาอีเมล..."
-          @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)"
-        />
+      <DataTable
+        ref="table"
+        :data="data || []"
+        :columns="columns"
+        :loading="status === 'pending'"
+      >
+        <template #filter="{ table }">
+          <UInput
+            :model-value="(table?.tableApi?.getColumn('email')?.getFilterValue() as string)"
+            class="max-w-sm"
+            icon="i-lucide-search"
+            placeholder="ค้นหาอีเมล..."
+            @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)"
+          />
+        </template>
 
-        <div class="flex flex-wrap items-center gap-1.5">
+        <template #action="{ table }">
           <ClientOnly>
             <AdminCustomersDeleteModal
               :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
@@ -331,74 +339,8 @@ const pagination = ref({
             placeholder="กรองตามแพ็คเกจ"
             class="min-w-28"
           />
-          <UDropdownMenu
-            class="cursor-pointer"
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault()
-                  }
-                }))
-            "
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              label="แสดงคอลัมน์"
-              color="neutral"
-              variant="outline"
-              trailing-icon="i-lucide-settings-2"
-            />
-          </UDropdownMenu>
-        </div>
-      </div>
-
-      <UTable
-        ref="table"
-        v-model:column-filters="columnFilters"
-        v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
-        v-model:pagination="pagination"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel()
-        }"
-        class="shrink-0"
-        :data="data"
-        :columns="columns"
-        :loading="status === 'pending'"
-        :ui="{
-          base: 'table-fixed border-separate border-spacing-0',
-          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-          tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-2 font-medium first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-          td: 'border-b border-default',
-          separator: 'h-0'
-        }"
-      />
-
-      <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
-        <div class="text-sm text-muted">
-          เลือก {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }}
-          จาก {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} แถวทั้งหมด
-        </div>
-
-        <div class="flex items-center gap-1.5">
-          <UPagination
-            :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-            :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-            :total="table?.tableApi?.getFilteredRowModel().rows.length"
-            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
-          />
-        </div>
-      </div>
+        </template>
+      </DataTable>
     </template>
   </UDashboardPanel>
 </template>
