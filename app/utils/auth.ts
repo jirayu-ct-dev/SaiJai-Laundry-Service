@@ -36,9 +36,9 @@ export const auth = betterAuth({
     },
     user: {
         additionalFields: {
-            role: { type: "string", required: true, default: "USER" },
-            phoneNumber: { type: "string",required: false },
-            lineUserId: { type: "string",required: false },
+            role: { type: "string", required: false, default: "User" },
+            phoneNumber: { type: "string", required: false },
+            lineUserId: { type: "string", required: false },
             points: { type: "number", default: 0 },
         }
     }
