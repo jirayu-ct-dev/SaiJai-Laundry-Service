@@ -3,29 +3,31 @@ import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const fileRef = ref<HTMLInputElement>()
+const { user } = useUser()
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Too short'),
-  email: z.string().email('Invalid email'),
-  username: z.string().min(2, 'Too short'),
+  name: z.string().min(2, 'กรุณากรอกชื่อ'),
+  email: z.email('กรุณากรอกอีเมลที่ถูกต้อง'),
+  username: z.string().min(2, 'กรุณากรอกชื่อผู้ใช้'),
   avatar: z.string().optional(),
   bio: z.string().optional()
 })
 
+
 type ProfileSchema = z.output<typeof profileSchema>
 
 const profile = reactive<Partial<ProfileSchema>>({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
-  avatar: undefined,
-  bio: undefined
+  name: user.value?.name || '',
+  email: user.value?.email || '',
+  username: '',
+  avatar: '',
+  bio: ''
 })
 const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
+const onSubmit = (event: FormSubmitEvent<ProfileSchema>) => {
   toast.add({
-    title: 'Success',
-    description: 'Your settings have been updated.',
+    title: 'สำเร็จ',
+    description: 'บันทึกการตั้งค่าเรียบร้อยแล้ว',
     icon: 'i-lucide-check',
     color: 'success'
   })
@@ -55,15 +57,15 @@ function onFileClick() {
     @submit="onSubmit"
   >
     <UPageCard
-      title="Profile"
-      description="These informations will be displayed publicly."
+      title="โปรไฟล์"
+      description="ข้อมูลเหล่านี้จะแสดงต่อสาธารณะ"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
         form="settings"
-        label="Save changes"
+        label="บันทึกการเปลี่ยนแปลง"
         color="neutral"
         type="submit"
         class="w-fit lg:ms-auto"
@@ -73,8 +75,8 @@ function onFileClick() {
     <UPageCard variant="subtle">
       <UFormField
         name="name"
-        label="Name"
-        description="Will appear on receipts, invoices, and other communication."
+        label="ชื่อ"
+        description="จะแสดงในใบเสร็จ การแจ้งเตือน และการสื่อสารอื่นๆ"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -86,8 +88,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="email"
-        label="Email"
-        description="Used to sign in, for email receipts and product updates."
+        label="อีเมล"
+        description="ใช้สำหรับเข้าสู่ระบบ และแก้ไขรหัสผ่าน"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -100,8 +102,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="username"
-        label="Username"
-        description="Your unique username for logging in and your profile URL."
+        label="ชื่อผู้ใช้"
+        description="ชื่อผู้ใช้เฉพาะของคุณสำหรับเข้าสู่ระบบและ URL โปรไฟล์"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -114,8 +116,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="avatar"
-        label="Avatar"
-        description="JPG, GIF or PNG. 1MB Max."
+        label="รูปโปรไฟล์"
+        description="JPG, GIF หรือ PNG ขนาดไม่เกิน 1MB"
         class="flex max-sm:flex-col justify-between sm:items-center gap-4"
       >
         <div class="flex flex-wrap items-center gap-3">
@@ -125,7 +127,7 @@ function onFileClick() {
             size="lg"
           />
           <UButton
-            label="Choose"
+            label="เลือกไฟล์"
             color="neutral"
             @click="onFileClick"
           />
@@ -141,8 +143,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="bio"
-        label="Bio"
-        description="Brief description for your profile. URLs are hyperlinked."
+        label="ประวัติย่อ"
+        description="คำอธิบายสั้นๆ สำหรับโปรไฟล์ของคุณ URL จะถูกเชื่อมโยงอัตโนมัติ"
         class="flex max-sm:flex-col justify-between items-start gap-4"
         :ui="{ container: 'w-full' }"
       >

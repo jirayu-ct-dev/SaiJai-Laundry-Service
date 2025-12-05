@@ -14,23 +14,6 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql", // or "mysql", "postgresql", ...etc
     }),
-    plugins: [
-        customSession(async ({ user, session }) => {
-            const dbUser = await prisma.user.findUnique({
-                where: { id: user.id },
-                select: { role: true },
-            })
-
-            return {
-                session,
-                user: {
-                    ...user,
-                    role: dbUser?.role || 'USER',
-                },
-            };
-        }),
-        openAPI(),
-    ],
     emailAndPassword: {
         enabled: true
     },
@@ -51,4 +34,12 @@ export const auth = betterAuth({
             // scopes are prefilled: ["openid","profile","email"]. Append if needed
         }
     },
+    user: {
+        additionalFields: {
+            role: { type: "string", required: true, default: "USER" },
+            phoneNumber: { type: "string",required: false },
+            lineUserId: { type: "string",required: false },
+            points: { type: "number", default: 0 },
+        }
+    }
 });
